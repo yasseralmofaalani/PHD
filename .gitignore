@@ -1,0 +1,14 @@
+node_modules
+dist
+*.local
+.DS_Store
+.thesis_unpacked
+.thesis_text.txt
+_*.txt
+*.docx
+*.pdf
+*.pptx
+deliverables/
+Chapter_*.pdf
+Chapter_*.pptx
+syria.geojson

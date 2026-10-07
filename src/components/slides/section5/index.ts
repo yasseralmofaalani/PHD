@@ -1,0 +1,17 @@
+export * from "./shared";
+export { ConclusionSectionMarker } from "./ConclusionSectionMarker";
+export { SlideS5_01_SectionIntro } from "./SlideS5_01_SectionIntro";
+export { SlideS5_02_ResearchSynthesis } from "./SlideS5_02_ResearchSynthesis";
+export { SlideS5_03_ThreeContributions } from "./SlideS5_03_ThreeContributions";
+export { SlideS5_04_KeyFindings } from "./SlideS5_04_KeyFindings";
+export { SlideS5_05_ScientificLesson } from "./SlideS5_05_ScientificLesson";
+export { SlideS5_06_OptimalToFair } from "./SlideS5_06_OptimalToFair";
+export { SlideS5_07_CoverageToControl } from "./SlideS5_07_CoverageToControl";
+export { SlideS5_08_EngineeringBoundaries } from "./SlideS5_08_EngineeringBoundaries";
+export { SlideS5_09_FuturePerspectives } from "./SlideS5_09_FuturePerspectives";
+export { SlideS5_10_ResearchRoadmap } from "./SlideS5_10_ResearchRoadmap";
+export { SlideS5_11_TheBigPicture } from "./SlideS5_11_TheBigPicture";
+export { SlideS5_12_FinalTakeaways } from "./SlideS5_12_FinalTakeaways";
+export { SlideS5_InteractiveSimulations } from "./SlideS5_InteractiveSimulations";
+export { SlideS5_13_ClosingSlide } from "./SlideS5_13_ClosingSlide";
+export { SlideS5_Conclusions, SlideS5_Recommendations } from "./SlidesCondensed";

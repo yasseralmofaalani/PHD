@@ -1,0 +1,15 @@
+export { SlideMarker04 } from './SlideMarker04';
+export { SlideS4_00_EvidenceGateway } from './SlideS4_00_EvidenceGateway';
+export { SlideS4_01_SectionIntro } from './SlideS4_01_SectionIntro';
+export { SlideS4_02_OverallResults } from './SlideS4_02_OverallResults';
+export { SlideS4_03_ResultsAcrossContributions } from './SlideS4_03_ResultsAcrossContributions';
+export { SlideS4_04_ResultsPlanning } from './SlideS4_04_ResultsPlanning';
+export { SlideS4_05_ResultsFairness } from './SlideS4_05_ResultsFairness';
+export { SlideS4_06_ResultsControl } from './SlideS4_06_ResultsControl';
+export { SlideS4_07_EngineeringFindings } from './SlideS4_07_EngineeringFindings';
+export { SlideS4_08_PublicationsOverview } from './SlideS4_08_PublicationsOverview';
+export { SlideS4_09_Publication01 } from './SlideS4_09_Publication01';
+export { SlideS4_10_Publication02 } from './SlideS4_10_Publication02';
+export { SlideS4_11_Publication03 } from './SlideS4_11_Publication03';
+export { SlideS4_12_ThesisToPublicationsMap } from './SlideS4_12_ThesisToPublicationsMap';
+export { SlideS4_13_ResearchOutputSummary } from './SlideS4_13_ResearchOutputSummary';

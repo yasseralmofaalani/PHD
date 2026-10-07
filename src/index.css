@@ -1,0 +1,754 @@
+/* ====================================================
+   PhD Defense Presentation — Global Styles
+   Color Palette (STRICT):
+   --primary: #428177
+   --secondary: #edebe0
+   --accent: #6b1f2a
+   --white: #ffffff
+   --text-dark: #000000
+   --text-light: #ffffff
+   ==================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ---- CSS Custom Properties (STRICT PALETTE) ---- */
+:root {
+  --primary: #428177;
+  --primary-light: rgba(66, 129, 119, 0.12);
+  --primary-mid: rgba(66, 129, 119, 0.35);
+  --primary-dark: #2c5952;
+  --title-color: #000000;
+  --slide-bg: #edebe0;
+  --card-bg: #ffffff;
+  --card-border: rgba(66, 129, 119, 0.25);
+  --secondary: #edebe0;
+  --secondary-dark: rgba(237, 235, 224, 0.7);
+  --secondary-light: #f8f8f3;
+  --accent: #6b1f2a;
+  --accent-light: rgba(107, 31, 42, 0.12);
+  --accent-mid: rgba(107, 31, 42, 0.4);
+  --accent-dark: #4d151e;
+  --white: #ffffff;
+  --black: #000000;
+  --text-dark: #000000;
+  --text-muted: rgba(0, 0, 0, 0.7);
+  --text-light: #ffffff;
+
+  /* Sidebar & Layout */
+  --sidebar-width: 240px;
+  --topbar-height: 72px;
+  --footer-height: 66px;
+}
+
+/* ---- Reset ---- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Cairo', 'Inter', sans-serif;
+  background: var(--slide-bg);
+  color: var(--text-dark);
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- RTL Support ---- */
+[dir="rtl"] {
+  font-family: 'Cairo', 'Inter', sans-serif;
+}
+
+/* ---- Scrollbar Styling ---- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--primary-mid);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* ---- Utility Classes ---- */
+.font-arabic {
+  font-family: 'Cairo', sans-serif;
+}
+
+.font-english {
+  font-family: 'Inter', sans-serif;
+}
+
+.text-primary { color: var(--primary); }
+.text-accent { color: var(--accent); }
+.text-secondary { color: var(--secondary); }
+.text-white { color: var(--white); }
+.text-dark { color: var(--text-dark); }
+
+.bg-primary { background-color: var(--primary); }
+.bg-accent { background-color: var(--accent); }
+.bg-secondary { background-color: var(--secondary); }
+.bg-white { background-color: var(--white); }
+
+/* ---- Presentation Shell & App Layout ---- */
+.presentation-app {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: var(--primary);
+}
+
+.presentation-body {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  width: 100vw;
+  height: calc(100vh - var(--topbar-height) - var(--footer-height));
+  overflow: hidden;
+  position: relative;
+  min-height: 0;
+  background: var(--slide-bg, #edebe0);
+}
+
+/* ---- Permanent Right Sidebar ---- */
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100%;
+  background: var(--primary);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: 50;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-left: 1px solid rgba(237, 235, 224, 0.2);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Sidebar remains visible in presentation and fullscreen */
+.presentation-app.fullscreen-mode .sidebar {
+  display: flex;
+}
+
+/* ---- Main Presentation Stage Area ---- */
+.presentation-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ---- TopBar ---- */
+.topbar {
+  height: var(--topbar-height);
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  flex-shrink: 0;
+  z-index: 60;
+  border-bottom: 1px solid rgba(237, 235, 224, 0.2);
+}
+
+/* ---- Slide Wrapper & Container ---- */
+.slide-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.slide-wrapper {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  background: #edebe0;
+}
+
+/* ---- Individual Slide Base ---- */
+.slide {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---- Slide Breadcrumb ---- */
+.slide-breadcrumb {
+  position: absolute;
+  top: 20px;
+  right: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  z-index: 10;
+}
+
+.slide-breadcrumb.light {
+  right: auto;
+  left: 28px;
+  align-items: flex-start;
+}
+
+/* ---- Progress Bar ---- */
+.progress-bar-container {
+  height: var(--footer-height);
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 28px;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(237, 235, 224, 0.2);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+}
+
+/* ---- Navigation Arrows ---- */
+.nav-arrows {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 100;
+}
+
+.nav-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1);
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---- Section Marker Slide ---- */
+.section-marker-slide {
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---- KPI Card ---- */
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 28px;
+  border-radius: 12px;
+  min-width: 200px;
+}
+
+.kpi-card.primary {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.kpi-card.accent {
+  background: var(--accent);
+  color: var(--white);
+}
+
+.kpi-card.secondary {
+  background: var(--secondary);
+  color: var(--text-dark);
+  border: 2px solid var(--primary);
+}
+
+.kpi-value {
+  font-size: clamp(40px, 5vw, 72px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.kpi-label {
+  font-size: clamp(18px, 1.8vw, 24px);
+  font-weight: 600;
+  text-align: center;
+  margin-top: 8px;
+  opacity: 0.9;
+}
+
+.kpi-sublabel {
+  font-size: clamp(16px, 1.4vw, 18px);
+  opacity: 0.7;
+  margin-top: 4px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ---- Modal ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  padding: 24px;
+}
+
+.modal-box {
+  background: var(--secondary);
+  border-radius: 16px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.4);
+}
+
+.modal-header {
+  padding: 24px 32px;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header.primary {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.modal-header.accent {
+  background: var(--accent);
+  color: var(--white);
+}
+
+.modal-body {
+  padding: 32px;
+  color: var(--text-dark);
+}
+
+.modal-close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* ---- Comparison Table ---- */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(18px, 2vw, 26px);
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 16px 24px;
+  text-align: center;
+  border-bottom: 1px solid rgba(66, 129, 119, 0.2);
+}
+
+.comparison-table th {
+  background: var(--primary);
+  color: var(--white);
+  font-weight: 700;
+  font-size: clamp(18px, 2vw, 24px);
+}
+
+.comparison-table tr:nth-child(even) td {
+  background: rgba(237, 235, 224, 0.5);
+}
+
+.comparison-table td:first-child {
+  text-align: right;
+  font-weight: 600;
+}
+
+/* ---- Flow Diagram ---- */
+.flow-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.flow-node {
+  padding: 12px 32px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 700;
+  min-width: 200px;
+}
+
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  color: var(--primary);
+  font-size: 24px;
+}
+
+/* ---- Animations ---- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes countUp {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes drawLine {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.animate-slide-in {
+  animation: slideInRight 0.5s ease forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s ease forwards;
+}
+
+/* ---- Delay classes ---- */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
+.delay-800 { animation-delay: 0.8s; }
+.delay-1000 { animation-delay: 1.0s; }
+
+.opacity-0 { opacity: 0; }
+
+/* ---- Clickable Term ---- */
+.clickable-term {
+  cursor: pointer;
+  border-bottom: 2px dashed rgba(66, 129, 119, 0.6);
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.clickable-term:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.clickable-term-accent {
+  cursor: pointer;
+  border-bottom: 2px dashed rgba(107, 31, 42, 0.6);
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.clickable-term-accent:hover {
+  border-color: var(--accent);
+}
+
+/* ---- Focus States for Accessibility ---- */
+:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---- Fullscreen mode slide counter ---- */
+.fullscreen-counter {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  z-index: 200;
+  backdrop-filter: blur(8px);
+}
+
+/* ---- Speaker Notes Panel ---- */
+.speaker-notes-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  background: rgba(0, 0, 0, 0.92);
+  color: white;
+  padding: 16px 24px;
+  z-index: 300;
+  transform: translateY(100%);
+  transition: transform 0.4s ease;
+  border-top: 2px solid var(--primary);
+  overflow-y: auto;
+}
+
+.speaker-notes-panel.open {
+  transform: translateY(0);
+}
+
+/* ---- GIS SVG Styles ---- */
+.gis-cell-tower {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 1.5;
+}
+
+.gis-coverage-polygon {
+  fill: rgba(66, 129, 119, 0.1);
+  stroke: var(--primary);
+  stroke-width: 1;
+}
+
+.gis-target-polygon {
+  fill: rgba(107, 31, 42, 0.15);
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: 6 3;
+}
+
+.gis-site-dot {
+  fill: var(--primary);
+  r: 3;
+}
+
+.gis-site-dot.active {
+  fill: var(--accent);
+}
+
+/* ---- Grid Pattern Background (disabled — clean parchment) ---- */
+.bg-grid {
+  background-image: none;
+}
+
+/* ---- Separator ---- */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(237, 235, 224, 0.2);
+}
+
+.divider.primary {
+  background: rgba(66, 129, 119, 0.3);
+}
+
+
+/* ---- Cellular & GIS Network Keyframe Animations ---- */
+@keyframes signalPulseRing {
+  0% {
+    r: 6px;
+    opacity: 0.9;
+    stroke-width: 1.5px;
+  }
+  50% {
+    opacity: 0.4;
+    stroke-width: 1px;
+  }
+  100% {
+    r: 26px;
+    opacity: 0;
+    stroke-width: 0.5px;
+  }
+}
+
+@keyframes dataPacketFlow {
+  0% {
+    stroke-dashoffset: 200;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes subtleRadarSweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes softGlowBreathing {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(66, 129, 119, 0.45));
+    opacity: 0.85;
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(66, 129, 119, 0.85)) drop-shadow(0 0 22px rgba(237, 235, 224, 0.4));
+    opacity: 1;
+  }
+}
+
+@keyframes titleCardBorderGlow {
+  0%, 100% {
+    border-color: rgba(66, 129, 119, 0.4);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 35px rgba(66, 129, 119, 0.2);
+  }
+  50% {
+    border-color: rgba(237, 235, 224, 0.55);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7), 0 0 55px rgba(66, 129, 119, 0.35), 0 0 20px rgba(237, 235, 224, 0.15);
+  }
+}
+
+.cover-system-card {
+  animation: titleCardBorderGlow 8s ease-in-out infinite;
+}
+
+.network-signal-ring {
+  transform-origin: center;
+  animation: signalPulseRing 3.6s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+}
+
+.network-signal-ring-delay-1 {
+  animation-delay: 1.2s;
+}
+
+.network-signal-ring-delay-2 {
+  animation-delay: 2.4s;
+}
+
+.network-node-breathing {
+  animation: softGlowBreathing 4s ease-in-out infinite;
+}
+
+/* ---- Academic Timeline Progress Bar Enhancements ---- */
+.timeline-item-active {
+  position: relative;
+}
+
+.timeline-item-active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 15%;
+  right: 15%;
+  height: 2px;
+  background: #ffd700;
+  border-radius: 2px;
+  box-shadow: 0 0 8px #ffd700, 0 0 14px rgba(255, 215, 0, 0.6);
+}
+
+/* ---- Reduced Motion Support ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .network-signal-ring,
+  .cover-system-card,
+  .network-node-breathing {
+    animation: none !important;
+  }
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1366px) {
+  :root {
+    --sidebar-width: 200px;
+    --topbar-height: 72px;
+    --footer-height: 66px;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 180px;
+    --topbar-height: 64px;
+    --footer-height: 62px;
+  }
+
+  .kpi-value {
+    font-size: clamp(32px, 4vw, 56px);
+  }
+}
+
