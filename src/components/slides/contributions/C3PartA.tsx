@@ -1,8 +1,7 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Activity, Layers, MapPinned, Radio, SlidersHorizontal, Waypoints } from "lucide-react";
-import { Box, C, Chip, ContribStage, Pulse, Show, ShowG, SYRIA_OUTLINE, SyriaBase, T, insideSyria, useBeats, useSites } from "./kit";
-import { ARCH_LAYERS } from "./facts";
+import { Fingerprint, Layers, MapPinned, MessageSquare, Phone, Radio, RotateCcw, Server, Timer, Wifi, type LucideIcon } from "lucide-react";
+import { Box, C, Chip, ContribStage, EASE, Pulse, Show, ShowG, SYRIA_OUTLINE, SyriaBase, T, insideSyria, useBeats, useSites } from "./kit";
 
 /* ───────── Shared operational geometry ───────── */
 
@@ -94,8 +93,10 @@ const useTriSites = (): SectorSite[] => {
 
 const TriSite: React.FC<{ site: SectorSite; reveal: number }> = ({ site, reveal }) => {
   const showReach = reveal >= 3;
+  const showZone = reveal >= 2;
   const isOut = site.kind === "outside-reach";
   const isIn = site.kind === "inside";
+  const goldIn = showZone && isIn;
   return (
     <g>
       {showReach && isOut && (
@@ -104,25 +105,26 @@ const TriSite: React.FC<{ site: SectorSite; reveal: number }> = ({ site, reveal 
       {site.sectors.map((sec, k) => {
         const hit = showReach && sec.hit;
         const outHit = hit && isOut;
+        const gold = goldIn || outHit;
         return (
           <g key={k}>
             <polygon
               points={polyStr(sec.pts)}
-              fill={outHit ? "rgba(200,149,26,0.55)" : hit && isIn ? "rgba(79,184,171,0.28)" : "rgba(8,16,18,0.25)"}
-              stroke={outHit ? C.gold : hit && isIn ? C.cyan : SECTOR_EDGE[k]}
-              strokeWidth={outHit ? 1.15 : 0.85}
+              fill={goldIn ? "rgba(200,149,26,0.72)" : outHit ? "rgba(200,149,26,0.42)" : "rgba(8,16,18,0.25)"}
+              stroke={gold ? C.gold : SECTOR_EDGE[k]}
+              strokeWidth={gold ? 1.2 : 0.85}
               strokeLinejoin="round"
               opacity={showReach && site.kind === "far" ? 0.38 : 1}
             />
-            <line x1={sec.pts[0][0]} y1={sec.pts[0][1]} x2={sec.pts[2][0]} y2={sec.pts[2][1]} stroke={outHit ? C.gold : SECTOR_EDGE[k]} strokeWidth={0.45} opacity={0.8} />
+            <line x1={sec.pts[0][0]} y1={sec.pts[0][1]} x2={sec.pts[2][0]} y2={sec.pts[2][1]} stroke={gold ? C.gold : SECTOR_EDGE[k]} strokeWidth={0.45} opacity={0.8} />
           </g>
         );
       })}
       <circle
         cx={site.x}
         cy={site.y}
-        r={isOut && showReach ? 2.1 : 1.55}
-        fill={showReach && isOut ? C.gold : showReach && isIn ? C.cyan : "#fb7185"}
+        r={(isOut && showReach) || goldIn ? 2.1 : 1.55}
+        fill={goldIn || (showReach && isOut) ? C.gold : "#fb7185"}
         stroke="#fff"
         strokeWidth={0.45}
       />
@@ -221,9 +223,9 @@ export const C3Problem: React.FC = () => {
             سيناريوهات الطوارئ المصرّح بها
           </Chip>
           <Show step={step} at={3} style={{ display: "grid", gap: 8 }}>
-            <div style={{ background: "rgba(79,184,171,0.10)", border: `1.5px solid ${C.cyan}`, borderRadius: 14, padding: "10px 12px" }}>
-              <div style={{ fontSize: 15, fontWeight: 800, color: C.nightInkSoft }}>مواقع داخل الدائرة</div>
-              <div style={{ fontFamily: "Inter, sans-serif", fontSize: 30, fontWeight: 900, color: C.cyan, lineHeight: 1.1 }}>{insideN}</div>
+            <div style={{ background: "rgba(200,149,26,0.14)", border: `1.5px solid ${C.gold}`, borderRadius: 14, padding: "10px 12px" }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: C.gold }}>مواقع داخل الدائرة</div>
+              <div style={{ fontFamily: "Inter, sans-serif", fontSize: 30, fontWeight: 900, color: C.gold, lineHeight: 1.1 }}>{insideN}</div>
             </div>
             <div style={{ background: "rgba(200,149,26,0.14)", border: `1.5px solid ${C.gold}`, borderRadius: 14, padding: "10px 12px" }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: C.gold }}>خارج الدائرة لكن تغطيتها تصل</div>
@@ -241,147 +243,606 @@ export const C3Problem: React.FC = () => {
   );
 };
 
-/* ═════════════ III-2 · Six-layer architecture ═════════════ */
+/* ═════════════ III-2 · Cellular service control mechanism ═════════════ */
 
-const LAYER_META = [
-  { icon: MapPinned, short: "التحليل المكاني", role: "استعلام النطاق وتجهيز الملفات الجغرافية", out: "نطاق جغرافي" },
-  { icon: Radio, short: "استخلاص الخلايا", role: "نمذجة الانتشار ثم التقاطع المكاني", out: "خلايا واصلة" },
-  { icon: Layers, short: "التجريد متعدد الموردين", role: "توحيد الأوامر عبر محولات الموردين", out: "أمر موحّد" },
-  { icon: Waypoints, short: "محرك التنسيق", role: "سياسات العزل والتحكم في النفاذ", out: "قرار تنفيذي" },
-  { icon: SlidersHorizontal, short: "إعادة التهيئة", role: "ضبط عقد النفاذ والشبكة الجوهرية", out: "تهيئة حيّة" },
-  { icon: Activity, short: "المراقبة والاستعادة", role: "مؤشرات الأداء ثم الاستعادة التلقائية", out: "حلقة مغلقة" },
+const CREAM = "#f4f2ea";
+const CREAM_SOFT = "rgba(244,242,234,0.74)";
+const GOLD_LIT = "#f0c14d";
+
+const FLOW = [
+  {
+    title: "تحديد المنطقة",
+    beat: "تحديد المنطقة",
+    tag: "دخل الخوارزمية",
+    accent: C.gold,
+    line: "دخل الخوارزمية: المنطقة المراد حجب التغطية عنها، الخلايا الخليوية، وتوقع التغطية الجغرافية لكل خلية.",
+  },
+  {
+    title: "تقاطع التغطية",
+    beat: "تقاطع التغطية",
+    tag: "نظم المعلومات الجغرافية",
+    accent: C.cyan,
+    line: "يتقاطع نظام المعلومات الجغرافية المنطقة المراد حجبها مع طبقات التغطية المتوقعة، فتُستخلَص الخلايا التي تصل تغطيتها إلى النطاق.",
+  },
+  {
+    title: "المعرّف والتعليمات",
+    beat: "المعرّف والتعليمات",
+    tag: "لكل خلية واصلة",
+    accent: C.gold,
+    line: "يُحدَّد الرقم المميز لكل خلية، وتُحدَّد التعليمات البرمجية لحجب الرسائل أو الاتصالات أو الإنترنت.",
+  },
+  {
+    title: "إلغاء التعريف",
+    beat: "إلغاء التعريف",
+    tag: "الشبكة الجوهرية",
+    accent: C.red,
+    line: "تُنفَّذ التعليمات البرمجية لإلغاء تعريف هذه الخلايا من الشبكة الجوهرية الخليوية.",
+  },
+  {
+    title: "تغطية بلا خدمة",
+    beat: "تغطية بلا خدمة",
+    tag: "النتيجة التشغيلية",
+    accent: C.gold,
+    line: "تبقى التغطية الراديوية موجودة، ولكن لا توجد خدمة.",
+  },
+  {
+    title: "استعادة الخدمة",
+    beat: "استعادة الخدمة",
+    tag: "إعادة التعريف",
+    accent: C.green,
+    line: "بعد الانتهاء تُستعاد الخدمة بإعادة تعريف هذه الخلايا في الشبكة الجوهرية.",
+  },
+  {
+    title: "عشر دقائق",
+    beat: "عشر دقائق",
+    tag: "الزمن التشغيلي",
+    accent: C.gold,
+    line: "عملية الحجب والاستعادة لا تتجاوز عشر دقائق.",
+  },
 ] as const;
 
-const archNode = (i: number, r = 112) => {
-  const a = ((-90 + i * 60) * Math.PI) / 180;
-  return { x: 160 + r * Math.cos(a), y: 160 + r * Math.sin(a) };
+const CELLS: Array<{ id: string; svc: string; icon: LucideIcon }> = [
+  { id: "417-01-18421", svc: "الرسائل", icon: MessageSquare },
+  { id: "417-02-19007", svc: "الاتصالات", icon: Phone },
+  { id: "417-01-20314", svc: "الإنترنت", icon: Wifi },
+];
+
+const INPUTS: Array<{ icon: LucideIcon; title: string; sub: string; color: string }> = [
+  { icon: MapPinned, title: "المنطقة المراد حجب التغطية عنها", sub: "النطاق الجغرافي للحجب", color: C.gold },
+  { icon: MapPinned, title: "الخلايا الخليوية", sub: "", color: C.gold },
+  { icon: Radio, title: "توقع التغطية", sub: "البصمة الجغرافية لكل خلية", color: C.cyan },
+];
+
+const GisCanvas: React.FC<{ sites: SectorSite[] }> = ({ sites }) => (
+  <svg viewBox={`${ZONE.x - 92} ${ZONE.y - 78} 184 156`} style={{ width: "100%", height: "100%", display: "block" }}>
+    <SyriaBase idSuffix="mech" color="#8fd9cf" fillOpacity={0.14} />
+    <circle cx={ZONE.x} cy={ZONE.y} r={ZONE.r + 10} fill="rgba(200,149,26,0.08)" />
+    <motion.circle
+      cx={ZONE.x}
+      cy={ZONE.y}
+      r={ZONE.r}
+      fill="rgba(200,149,26,0.16)"
+      stroke={C.gold}
+      strokeWidth={1.8}
+      strokeDasharray="5 3"
+      animate={{ opacity: [0.72, 1, 0.72] }}
+      transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+    />
+    {sites.map((site, i) => {
+      const gold = site.kind !== "far";
+      return (
+        <g key={i} opacity={gold ? 1 : 0.22}>
+          {site.sectors.map((sec, k) => (
+            <polygon
+              key={k}
+              points={polyStr(sec.pts)}
+              fill={gold ? "rgba(200,149,26,0.62)" : "rgba(8,16,18,0.18)"}
+              stroke={gold ? C.gold : SECTOR_EDGE[k]}
+              strokeWidth={gold ? 1.15 : 0.7}
+              strokeLinejoin="round"
+            />
+          ))}
+          <circle cx={site.x} cy={site.y} r={gold ? 2.3 : 1.35} fill={gold ? C.gold : "#9aa7a4"} />
+        </g>
+      );
+    })}
+    <T x={ZONE.x} y={ZONE.y - ZONE.r - 8} size={9} weight={900} fill={C.gold}>
+      نطاق الحجب
+    </T>
+  </svg>
+);
+
+const SvcMark: React.FC<{ icon: LucideIcon; color: string; off?: boolean; label: string }> = ({ icon: Icon, color, off, label }) => (
+  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+    <div
+      style={{
+        position: "relative",
+        width: 58,
+        height: 58,
+        borderRadius: 16,
+        display: "grid",
+        placeItems: "center",
+        border: `1.5px solid ${off ? C.red : color}`,
+        background: off ? "rgba(176,58,46,0.12)" : `${color}22`,
+      }}
+    >
+      <Icon size={26} color={CREAM} strokeWidth={1.8} />
+      {off && <span style={{ position: "absolute", width: 2, height: 46, borderRadius: 2, background: C.red, transform: "rotate(42deg)" }} />}
+    </div>
+    <div style={{ fontSize: 16, fontWeight: 800, color: off ? "rgba(244,242,234,0.55)" : CREAM }}>{label}</div>
+  </div>
+);
+
+const CoreCard: React.FC<{ tone: string; verb: string }> = ({ tone, verb }) => (
+  <div
+    style={{
+      height: "100%",
+      minHeight: 0,
+      borderRadius: 18,
+      border: `1.5px solid ${tone}`,
+      background: "rgba(0,0,0,0.24)",
+      boxShadow: `inset 0 0 36px ${tone}24`,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      padding: 12,
+      textAlign: "center",
+    }}
+  >
+    <Server size={34} color={tone} strokeWidth={1.75} />
+    <div dir="ltr" style={{ fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: 18, color: tone, letterSpacing: 0.4 }}>
+      Core
+    </div>
+    <div style={{ fontSize: 22, fontWeight: 900, color: CREAM, lineHeight: 1.25 }}>{verb}</div>
+    <div style={{ fontSize: 15, fontWeight: 700, color: CREAM_SOFT }}>الشبكة الجوهرية</div>
+  </div>
+);
+
+const FlowArrow: React.FC<{ color: string }> = ({ color }) => (
+  <div style={{ display: "grid", placeItems: "center" }}>
+    <svg width="26" height="64" viewBox="0 0 26 64" aria-hidden>
+      <path d="M18 6 L8 32 L18 58" fill="none" stroke={color} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  </div>
+);
+
+const CellRows: React.FC<{ mode: "instruct" | "undef" | "define" }> = ({ mode }) => {
+  const tone = mode === "define" ? C.green : mode === "undef" ? C.red : C.gold;
+  const verb = mode === "define" ? "إعادة التعريف" : mode === "undef" ? "إلغاء التعريف" : "التعليمة";
+  return (
+    <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 8 }}>
+      {CELLS.map((cell, i) => {
+        const Icon = cell.icon;
+        return (
+          <motion.div
+            key={cell.id}
+            initial={{ opacity: 0, x: 18 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.08 * i, duration: 0.45, ease: EASE }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "44px 1.15fr 0.95fr",
+              gap: 10,
+              alignItems: "center",
+              background: "rgba(255,255,255,0.045)",
+              border: `1px solid ${tone}73`,
+              borderRadius: 14,
+              padding: "8px 12px",
+            }}
+          >
+            <div style={{ width: 40, height: 40, borderRadius: 12, display: "grid", placeItems: "center", background: `${tone}22`, border: `1px solid ${tone}` }}>
+              <Icon size={18} color={tone} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: CREAM_SOFT }}>الرقم المميز</div>
+              <div dir="ltr" style={{ fontFamily: "Inter, sans-serif", fontSize: 18, fontWeight: 900, color: CREAM, letterSpacing: 0.2 }}>
+                {cell.id}
+              </div>
+            </div>
+            <div style={{ textAlign: "start", minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: tone }}>{verb}</div>
+              <div style={{ fontSize: 18, fontWeight: 900, color: CREAM, lineHeight: 1.25 }}>{mode === "define" ? cell.svc : `حجب ${cell.svc}`}</div>
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
 };
 
-export const C3Architecture: React.FC = () => {
-  const { step, goNext, goToStep } = useBeats(7);
-  const active = Math.min(step, 6) - 1;
-  const integrated = step >= 7;
-  return (
-    <ContribStage
-      contribution={3}
-      title="الهندسة المعمارية للمنظومة: ست طبقات وظيفية متكاملة"
-      beats={["التحليل المكاني GIS", "النمذجة الراديوية والاستخلاص", "التجريد متعدد الموردين", "محرك التنسيق والسياسات", "إعادة التهيئة الديناميكية", "المراقبة والاستعادة التلقائية", "التكامل الوظيفي الشامل"]}
-      step={step}
-      goNext={goNext}
-      goToStep={goToStep}
-    >
-      <div style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "1.45fr 0.9fr", gap: 14 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 10, minHeight: 0 }}>
-          {LAYER_META.map((layer, i) => {
-            const Icon = layer.icon;
-            const reached = step >= i + 1;
-            const now = !integrated && step === i + 1;
-            const tone = !reached ? "rgba(79,184,171,0.32)" : now || integrated ? C.gold : C.cyan;
+const MechanismVisual: React.FC<{ step: number; sites: SectorSite[] }> = ({ step, sites }) => {
+  if (step === 1) {
+    return (
+      <div style={{ height: "100%", minHeight: 0, display: "grid", gridTemplateRows: "auto minmax(0, 1fr)", gap: 10, overflow: "hidden" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+          {INPUTS.map((item, i) => {
+            const Icon = item.icon;
             return (
               <motion.div
-                key={layer.short}
-                initial={false}
-                animate={{ opacity: reached ? 1 : 0.42, scale: now || integrated ? 1 : 0.985 }}
-                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                key={item.title}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.06 * i, duration: 0.45, ease: EASE }}
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  minHeight: 0,
-                  overflow: "hidden",
-                  background: now || integrated ? "rgba(200,149,26,0.12)" : "#ffffff",
-                  border: `1.5px solid ${now || integrated ? C.gold : reached ? "rgba(79,184,171,0.38)" : "rgba(79,184,171,0.16)"}`,
-                  boxShadow: now || integrated ? "0 0 22px rgba(200,149,26,0.18)" : "none",
-                  borderRadius: 18,
+                  borderRadius: 16,
                   padding: "12px 14px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  background: "rgba(255,255,255,0.045)",
+                  border: `1.5px solid ${item.color}88`,
+                  overflow: "hidden",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 12,
-                      display: "grid",
-                      placeItems: "center",
-                      background: "rgba(8,16,18,0.45)",
-                      border: `1px solid ${tone}`,
-                    }}
-                  >
-                    <Icon size={20} color={tone} strokeWidth={2.2} />
-                  </div>
-                  <div style={{ textAlign: "start" }}>
-                    <div style={{ fontFamily: "Inter, sans-serif", fontSize: 30, fontWeight: 900, color: tone, lineHeight: 1 }}>{i + 1}</div>
-                    <div style={{ fontSize: 15, fontWeight: 800, color: tone, marginTop: 2 }}>{layer.out}</div>
-                  </div>
+                <div style={{ width: 44, height: 44, borderRadius: 12, display: "grid", placeItems: "center", flexShrink: 0, background: `${item.color}22`, border: `1px solid ${item.color}` }}>
+                  <Icon size={22} color={item.color} />
                 </div>
-                <div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: reached ? C.nightInk : C.nightInkSoft, lineHeight: 1.25, marginTop: 8 }}>{layer.short}</div>
-                  <div style={{ fontSize: 17, fontWeight: 700, color: C.nightInkSoft, lineHeight: 1.4, marginTop: 6 }}>{layer.role}</div>
+                <div style={{ minWidth: 0 }}>
+                  <div dir="ltr" style={{ fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: 13, color: item.color }}>
+                    0{i + 1}
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: CREAM, lineHeight: 1.3 }}>{item.title}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: CREAM_SOFT, marginTop: 2, lineHeight: 1.3 }}>{item.sub}</div>
                 </div>
               </motion.div>
             );
           })}
         </div>
-
-        <div style={{ minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 8 }}>
-          <svg viewBox="0 0 320 320" style={{ width: "100%", maxHeight: 290 }}>
-            <circle cx={160} cy={160} r={124} fill="none" stroke="rgba(79,184,171,0.14)" strokeWidth={18} />
-            {LAYER_META.map((_, i) => {
-              const a = archNode(i);
-              const b = archNode((i + 1) % 6);
-              const lit = i === 5 ? integrated : step >= i + 2;
-              return (
-                <line
-                  key={`e${i}`}
-                  x1={a.x}
-                  y1={a.y}
-                  x2={b.x}
-                  y2={b.y}
-                  stroke={integrated ? C.gold : lit ? C.cyan : "rgba(79,184,171,0.18)"}
-                  strokeWidth={lit || integrated ? 2 : 1}
-                  strokeDasharray={i === 5 && !integrated ? "4 4" : undefined}
-                />
-              );
-            })}
-            <circle cx={160} cy={160} r={52} fill="rgba(8,16,18,0.88)" stroke={integrated ? C.gold : C.cyan} strokeWidth={2} />
-            <T x={160} y={150} size={16} weight={900} fill={integrated ? C.gold : C.cyan}>
-              المنظومة
-            </T>
-            <T x={160} y={172} size={13} weight={800} fill={C.nightInkSoft}>
-              ست طبقات
-            </T>
-            {LAYER_META.map((layer, i) => {
-              const { x, y } = archNode(i);
-              const reached = step >= i + 1;
-              const now = !integrated && step === i + 1;
-              const tone = !reached ? "rgba(79,184,171,0.35)" : now || integrated ? C.gold : C.cyan;
-              return (
-                <g key={layer.short}>
-                  <circle cx={x} cy={y} r={now || integrated ? 23 : 19} fill="#0c1618" stroke={tone} strokeWidth={now || integrated ? 2.4 : 1.5} />
-                  <T x={x} y={y} size={16} weight={900} fill={tone} latin>
-                    {i + 1}
-                  </T>
-                </g>
-              );
-            })}
+        <div
+          style={{
+            minHeight: 0,
+            overflow: "hidden",
+            borderRadius: 16,
+            padding: "8px 16px 12px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            background: "linear-gradient(90deg, rgba(200,149,26,0.1), rgba(200,149,26,0.22))",
+            border: `1.5px solid ${C.gold}`,
+          }}
+        >
+          <svg viewBox="0 0 360 28" style={{ width: "68%", height: 22, display: "block", margin: "0 auto", flexShrink: 0 }} aria-hidden>
+            <path d="M40 2 L180 24 M180 2 L180 24 M320 2 L180 24" fill="none" stroke={C.gold} strokeWidth="1.6" />
+            <circle cx="180" cy="24" r="3.2" fill={C.gold} />
           </svg>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 4 }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: GOLD_LIT }}>تُجمع العناصر الثلاثة ثم تُمرَّر</div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: CREAM, lineHeight: 1.15 }}>دخل الخوارزمية</div>
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+              {["منطقة الحجب", "المنطقة", "التغطية"].map((chip) => (
+                <span key={chip} style={{ fontSize: 15, fontWeight: 800, color: "#1a1408", background: GOLD_LIT, borderRadius: 999, padding: "5px 12px" }}>
+                  {chip}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 2) {
+    const layers = [
+      { color: C.gold, icon: MapPinned, title: "طبقة المنطقة", sub: "النطاق الجغرافي المراد حجبه" },
+      { color: C.cyan, icon: Radio, title: "طبقة التغطية", sub: "التوقع الجغرافي لكل خلية" },
+      { color: GOLD_LIT, icon: Layers, title: "ناتج التقاطع", sub: "الخلايا التي تصل تغطيتها" },
+    ];
+    return (
+      <div style={{ height: "100%", minHeight: 0, display: "grid", gridTemplateRows: "minmax(0, 1fr) auto", gap: 8, overflow: "hidden" }}>
+        <div style={{ minHeight: 0, borderRadius: 16, overflow: "hidden", background: "rgba(0,0,0,0.22)", border: "1px solid rgba(143,217,207,0.28)", position: "relative" }}>
+          <GisCanvas sites={sites} />
+          <div style={{ position: "absolute", left: 10, bottom: 10, fontSize: 14, fontWeight: 800, color: CREAM, background: "rgba(12,22,24,0.78)", borderRadius: 999, padding: "4px 10px" }}>
+            الذهبي: خلايا تصل تغطيتها
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 34px 1fr 34px 1fr", gap: 8, alignItems: "center" }}>
+          {layers.map((layer, i) => {
+            const Icon = layer.icon;
+            return (
+              <React.Fragment key={layer.title}>
+                {i > 0 && (
+                  <div style={{ display: "grid", placeItems: "center" }}>
+                    {i === 1 ? (
+                      <span style={{ fontSize: 16, fontWeight: 900, color: GOLD_LIT }}>مع</span>
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+                        <path d="M12 3 L5 9 L12 15" fill="none" stroke={GOLD_LIT} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                )}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, borderRadius: 14, padding: "8px 10px", background: "rgba(255,255,255,0.045)", border: `1px solid ${layer.color}66`, minWidth: 0 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 10, display: "grid", placeItems: "center", flexShrink: 0, background: `${layer.color}22` }}>
+                    <Icon size={16} color={layer.color} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 16, fontWeight: 900, color: CREAM, lineHeight: 1.2 }}>{layer.title}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: CREAM_SOFT, marginTop: 1, lineHeight: 1.3 }}>{layer.sub}</div>
+                  </div>
+                </div>
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 3) {
+    return (
+      <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: GOLD_LIT, fontSize: 16, fontWeight: 800 }}>
+            <Fingerprint size={18} />
+            الرقم المميز والتعليمة البرمجية
+          </div>
+          <div dir="ltr" style={{ fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: 800, color: "#1a1408", background: GOLD_LIT, borderRadius: 999, padding: "4px 10px" }}>
+            LOCK(Cell-ID, SMS | VOICE | DATA)
+          </div>
+        </div>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <CellRows mode="instruct" />
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 4) {
+    return (
+      <div style={{ height: "100%", minHeight: 0, display: "grid", gridTemplateColumns: "1.35fr 28px 0.72fr", gap: 8 }}>
+        <CellRows mode="undef" />
+        <FlowArrow color={C.red} />
+        <CoreCard tone={C.red} verb="إلغاء التعريف" />
+      </div>
+    );
+  }
+
+  if (step === 5) {
+    return (
+      <div style={{ height: "100%", minHeight: 0, display: "grid", gridTemplateColumns: "1fr 52px 1fr", gap: 8 }}>
+        <div style={{ minHeight: 0, borderRadius: 18, border: `1.5px solid ${C.cyan}`, background: "rgba(79,184,171,0.08)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: 10 }}>
+          <svg viewBox="0 0 180 110" style={{ width: "78%", maxHeight: 120 }}>
+            {[0, 1, 2].map((k) => (
+              <motion.circle
+                key={k}
+                cx={90}
+                cy={64}
+                fill="none"
+                stroke={C.cyan}
+                strokeWidth={1.6}
+                initial={{ r: 16, opacity: 0.7 }}
+                animate={{ r: [16, 48], opacity: [0.65, 0] }}
+                transition={{ duration: 2.1, repeat: Infinity, delay: k * 0.55, ease: "easeOut" }}
+              />
+            ))}
+            <Tower x={90} y={64} color={C.cyan} s={1.7} />
+          </svg>
+          <div style={{ fontSize: 28, fontWeight: 900, color: CREAM, lineHeight: 1.15 }}>التغطية موجودة</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: CREAM_SOFT }}>البث الراديوي مستمر</div>
+        </div>
+        <div style={{ display: "grid", placeItems: "center", fontSize: 22, fontWeight: 900, color: GOLD_LIT }}>لكن</div>
+        <div style={{ minHeight: 0, borderRadius: 18, border: `1.5px solid ${C.red}`, background: "rgba(176,58,46,0.1)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: 10 }}>
+          <div style={{ display: "flex", gap: 12 }}>
+            {CELLS.map((cell) => (
+              <SvcMark key={cell.id} icon={cell.icon} color={C.red} off label={cell.svc} />
+            ))}
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: CREAM, lineHeight: 1.15 }}>لا توجد خدمة</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 6) {
+    return (
+      <div style={{ height: "100%", minHeight: 0, display: "grid", gridTemplateColumns: "0.72fr 28px 1.35fr", gap: 8 }}>
+        <CoreCard tone={C.green} verb="إعادة التعريف" />
+        <FlowArrow color={C.green} />
+        <div style={{ minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: C.green, fontSize: 16, fontWeight: 800, flexShrink: 0 }}>
+            <RotateCcw size={18} />
+            تعود الخلايا معرَّفة وتعود خدماتها
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, minHeight: 0 }}>
+            {CELLS.map((cell, i) => {
+              const Icon = cell.icon;
+              return (
+                <motion.div
+                  key={cell.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.08 * i, duration: 0.4, ease: EASE }}
+                  style={{ borderRadius: 16, padding: "12px 10px", background: "rgba(46,125,91,0.12)", border: `1.5px solid ${C.green}`, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center" }}
+                >
+                  <div style={{ width: 46, height: 46, borderRadius: 14, display: "grid", placeItems: "center", background: "rgba(46,125,91,0.2)" }}>
+                    <Icon size={22} color={CREAM} />
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: CREAM }}>{cell.svc}</div>
+                  <div dir="ltr" style={{ fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 800, color: CREAM_SOFT }}>
+                    {cell.id}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ height: "100%", minHeight: 0, display: "grid", gridTemplateColumns: "0.72fr 1.28fr", gap: 18, alignItems: "center" }}>
+      <div style={{ display: "grid", placeItems: "center" }}>
+        <div
+          style={{
+            width: "min(176px, 100%)",
+            aspectRatio: "1",
+            borderRadius: "50%",
+            border: `3px solid ${C.gold}`,
+            boxShadow: "0 0 0 10px rgba(200,149,26,0.14), inset 0 0 32px rgba(200,149,26,0.16)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Timer size={18} color={GOLD_LIT} />
+          <div dir="ltr" style={{ fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: 64, color: GOLD_LIT, lineHeight: 0.9, marginTop: 2 }}>
+            ≤10
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: CREAM }}>دقائق</div>
+        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {[
+          { label: "حجب الخدمة", note: "من تحديد النطاق حتى انقطاع الخدمة" },
+          { label: "استعادة الخدمة", note: "من إعادة التعريف حتى عودة الخدمة" },
+        ].map((row) => (
+          <div key={row.label}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+              <div style={{ fontSize: 22, fontWeight: 900, color: CREAM }}>{row.label}</div>
+              <div dir="ltr" style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 900, color: GOLD_LIT }}>
+                ≤ 10 min
+              </div>
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: CREAM_SOFT, marginTop: 2 }}>{row.note}</div>
+            <div style={{ marginTop: 8, height: 10, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+              <motion.div
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 0.9, ease: EASE }}
+                style={{ height: "100%", borderRadius: 99, background: `linear-gradient(90deg, ${C.cyan}, ${C.gold})` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export const C3Architecture: React.FC = () => {
+  const sites = useTriSites();
+  const { step, goNext, goToStep } = useBeats(FLOW.length);
+  const shown = Math.min(FLOW.length, Math.max(1, step));
+  const current = FLOW[shown - 1];
+  const progress = (shown - 1) / (FLOW.length - 1);
+  return (
+    <ContribStage
+      contribution={3}
+      title="آلية عمل التحكم بالخدمة الخليوية"
+      beats={FLOW.map((item) => item.beat)}
+      step={step}
+      goNext={goNext}
+      goToStep={goToStep}
+    >
+      <div style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "minmax(250px, 0.34fr) minmax(0, 1fr)", gap: 14 }}>
+        <div style={{ position: "relative", minHeight: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ position: "absolute", right: 17, top: 16, bottom: 16, width: 2, background: "rgba(15,23,42,0.08)", zIndex: 0 }} />
           <div
             style={{
-              background: integrated ? "rgba(200,149,26,0.12)" : "rgba(79,184,171,0.10)",
-              border: `1.5px solid ${integrated ? C.gold : C.cyan}`,
-              borderRadius: 14,
-              padding: "12px 14px",
+              position: "absolute",
+              right: 17,
+              top: 16,
+              width: 2,
+              zIndex: 0,
+              height: `calc((100% - 32px) * ${progress})`,
+              background: C.gold,
+              transition: "height 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
-          >
-            <div style={{ fontSize: 17, fontWeight: 800, color: C.nightInkSoft }}>{integrated ? "التكامل الوظيفي" : `الطبقة ${active + 1} من 6`}</div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: integrated ? C.gold : C.nightInk, marginTop: 2 }}>
-              {integrated ? "من النطاق الجغرافي إلى الاستعادة" : LAYER_META[active].short}
-            </div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: C.nightInkSoft, marginTop: 5, lineHeight: 1.45 }}>
-              {integrated ? "البيانات تنزل من التحليل المكاني إلى الشبكة، ثم تعود المؤشرات بالمراقبة فتغلق الحلقة." : ARCH_LAYERS[active]}
-            </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: C.nightInkSoft, marginTop: 6 }}></div>
+          />
+          {FLOW.map((item, i) => {
+            const reached = step >= i + 1;
+            const now = step === i + 1;
+            return (
+              <div key={item.title} style={{ flex: now ? 1.15 : 1, minHeight: 0, display: "grid", gridTemplateColumns: "36px minmax(0, 1fr)", gap: 8, alignItems: "stretch" }}>
+                <div style={{ display: "grid", placeItems: "center", position: "relative", zIndex: 1 }}>
+                  <div
+                    style={{
+                      width: now ? 34 : 28,
+                      height: now ? 34 : 28,
+                      borderRadius: 999,
+                      display: "grid",
+                      placeItems: "center",
+                      fontFamily: "Inter, sans-serif",
+                      fontWeight: 900,
+                      fontSize: now ? 14 : 12,
+                      color: now || reached ? "#1a1408" : C.inkMuted,
+                      background: now || reached ? (now ? C.gold : C.cyan) : "#f7f6f0",
+                      border: `1.5px solid ${now ? C.gold : reached ? C.cyan : "rgba(15,23,42,0.12)"}`,
+                      boxShadow: now ? "0 0 0 4px rgba(200,149,26,0.18)" : "none",
+                    }}
+                  >
+                    {i + 1}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  data-no-advance="true"
+                  onClick={() => goToStep(i + 1)}
+                  style={{
+                    minWidth: 0,
+                    minHeight: 0,
+                    height: "100%",
+                    textAlign: "right",
+                    cursor: "pointer",
+                    fontFamily: "Cairo, sans-serif",
+                    borderRadius: 14,
+                    padding: "0 12px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    background: now ? "#fff" : reached ? "rgba(255,255,255,0.72)" : "rgba(255,255,255,0.38)",
+                    border: now ? `1.5px solid ${C.gold}` : "1px solid rgba(15,23,42,0.06)",
+                    boxShadow: now ? "0 8px 20px rgba(200,149,26,0.12)" : "none",
+                    opacity: reached || now ? 1 : 0.55,
+                  }}
+                >
+                  <div style={{ fontSize: now ? 18 : 15.5, fontWeight: 900, color: now ? C.ink : C.inkSoft, lineHeight: 1.25 }}>{item.title}</div>
+                  {now && <div style={{ fontSize: 13, fontWeight: 800, color: item.accent, marginTop: 2 }}>{item.tag}</div>}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          style={{
+            minWidth: 0,
+            minHeight: 0,
+            position: "relative",
+            borderRadius: 22,
+            overflow: "hidden",
+            background: "linear-gradient(165deg, #132224 0%, #0c1618 58%, #101c1e 100%)",
+            border: `1.5px solid ${current.accent}77`,
+            boxShadow: "0 16px 36px rgba(12,22,24,0.16)",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none",
+              background: "radial-gradient(circle at 100% 0%, rgba(200,149,26,0.16), transparent 34%)",
+            }}
+          />
+          <div key={shown} style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", padding: "14px 16px 12px", minHeight: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10, flexShrink: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: current.accent }}>{current.tag}</div>
+                <div dir="ltr" style={{ fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: 13, color: GOLD_LIT }}>
+                  {String(shown).padStart(2, "0")} / 07
+                </div>
+              </div>
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <MechanismVisual step={shown} sites={sites} />
+              </div>
+              <div style={{ flexShrink: 0, marginTop: 10, paddingTop: 8, borderTop: "1px solid rgba(244,242,234,0.12)" }}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: CREAM, lineHeight: 1.45 }}>{current.line}</div>
+              </div>
           </div>
         </div>
       </div>

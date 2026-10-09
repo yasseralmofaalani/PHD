@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { alpha } from "../../design/tokens";
-import { CH5_FINAL, FAIRNESS_EFFECT, HEADLINE, ISOLATION_BY_ENV, METHODS, RESTORATION, RUNTIME, STABILITY, TTEST, VENDORS } from "./facts";
+import { CH5_FINAL, FAIRNESS_EFFECT, HEADLINE, ISOLATION_BY_ENV, METHODS, RESTORATION, RUNTIME, STABILITY, TTEST } from "./facts";
 import { C, CONTRIB, CountUp, EASE, N, ResStage, Show, StatTag, useBeats } from "./stage";
 
 /**
@@ -19,13 +19,6 @@ const cardBase: React.CSSProperties = {
 
 const Kicker: React.FC<{ color: string; children: React.ReactNode }> = ({ color, children }) => (
   <span style={{ fontSize: 19, fontWeight: 900, color: "#fff", background: color, borderRadius: 6, padding: "1px 10px", alignSelf: "flex-start" }}>{children}</span>
-);
-
-const Line: React.FC<{ label: string; value: React.ReactNode; color?: string }> = ({ label, value, color = C.ink }) => (
-  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10, borderTop: `1px solid ${C.hair}`, paddingTop: 6 }}>
-    <span style={{ fontSize: 19.1, fontWeight: 700, color: C.inkSoft }}>{label}</span>
-    <span style={{ fontSize: 21.1, fontWeight: 900, color }}>{value}</span>
-  </div>
 );
 
 const Takeaway: React.FC<{ children: React.ReactNode; color?: string }> = ({ children, color = C.teal }) => (
@@ -56,7 +49,7 @@ const METRICS: Metric[] = [
   { key: "energy", label: "الطاقة", unit: "MWh", lo: 70, hi: 94, dec: 1, better: " ", hero: `−${HEADLINE.energySaving}`, heroNote: "78.3 مقابل 82.7 MWh", stat: TTEST.energy },
 ];
 
-const BAR_ORDER = ["random", "stdga", "nofair", "aga", "bpso"] as const;
+const BAR_ORDER = ["random", "stdga", "aga", "bpso"] as const;
 
 export const ResPlanningResults: React.FC = () => {
   const { step, goNext, goToStep } = useBeats(4);
@@ -312,9 +305,9 @@ export const ResFairnessResults: React.FC = () => {
 /* ═════════════ 4 · Control & isolation (contribution 3) ═════════════ */
 
 export const ResControlResults: React.FC = () => {
-  const { step, goNext, goToStep } = useBeats(3);
+  const { step, goNext, goToStep } = useBeats(2);
   const tone = CONTRIB[3].color;
-  const col = (i: number): React.CSSProperties => ({ ...cardBase, borderTop: `5px solid ${tone}`, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10, opacity: step >= i ? 1 : 0.1, transform: step >= i ? "none" : "translateY(10px)", transition: "opacity .5s, transform .5s" });
+  const col = (i: number): React.CSSProperties => ({ ...cardBase, borderTop: `5px solid ${tone}`, padding: "12px 16px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 10, minHeight: 0, opacity: step >= i ? 1 : 0.1, transform: step >= i ? "none" : "translateY(10px)", transition: "opacity .5s, transform .5s" });
   const accColors = [tone, alpha(tone, 0.7), alpha(tone, 0.45)];
   return (
     <ResStage
@@ -322,68 +315,40 @@ export const ResControlResults: React.FC = () => {
       contrib={3}
       question="ما كفاءة العزل المكاني من جانب الشبكة ومدى إمكانية استعادة الخدمة بأمان؟"
       title="التحكم التشغيلي: دقة عزل متقدمة، واستعادة محكومة زمنياً"
-      beats={["دقة العزل", "تنسيق الموردين", "زمن الاستعادة"]}
+      beats={["دقة العزل", "زمن الاستعادة"]}
       step={step}
       goNext={goNext}
       goToStep={goToStep}
       source=""
     >
       <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14 }}>
-        <div style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18 }}>
+        <div style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
           {/* isolation */}
           <div style={col(1)}>
             <Kicker color={tone}>01 · العزل المكاني</Kicker>
-            <div style={{ fontSize: 21.8, fontWeight: 900 }}>دقة العزل بحسب البيئة</div>
+            <div style={{ fontSize: 20, fontWeight: 900 }}>دقة العزل بحسب البيئة</div>
             {ISOLATION_BY_ENV.map((e, i) => (
-              <div key={e.env} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                  <span style={{ fontSize: 19.8, fontWeight: 800 }}>{e.env}</span>
-                  <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: 31.2, color: tone, direction: "ltr" }}>{e.accuracy}%</span>
+              <div key={e.env} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto", gap: 12, alignItems: "center" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
+                    <span style={{ fontSize: 18, fontWeight: 800 }}>{e.env}</span>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: C.inkSoft }}>
+                      انتشار <N weight={800}>{e.spillover}%</N>
+                    </span>
+                  </div>
+                  <div style={{ height: 12, background: "rgba(15,23,42,0.06)", borderRadius: 6, overflow: "hidden" }}>
+                    <motion.div initial={{ width: 0 }} animate={{ width: step >= 1 ? `${e.accuracy}%` : 0 }} transition={{ duration: 0.8, delay: 0.15 * i, ease: EASE }} style={{ height: "100%", background: accColors[i], borderRadius: 6 }} />
+                  </div>
                 </div>
-                <div style={{ height: 14, background: "rgba(15,23,42,0.06)", borderRadius: 6, overflow: "hidden" }}>
-                  <motion.div initial={{ width: 0 }} animate={{ width: step >= 1 ? `${e.accuracy}%` : 0 }} transition={{ duration: 0.8, delay: 0.15 * i, ease: EASE }} style={{ height: "100%", background: accColors[i], borderRadius: 6 }} />
-                </div>
-                <div style={{ fontSize: 18.5, fontWeight: 700, color: C.inkSoft }}>
-                  انتشار غير مقصود <N weight={800}>{e.spillover}%</N>
-                  {" · "}
-                  فترة ثقة <span style={{ fontFamily: "Inter, sans-serif" }}>(CI)</span>{" "}
-                  <N weight={700} color={C.inkMuted}>{e.accuracyCi}</N>
-                </div>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: 28, color: tone, direction: "ltr" }}>{e.accuracy}%</span>
               </div>
             ))}
           </div>
 
-          {/* vendors */}
-          <div style={col(2)}>
-            <Kicker color={tone}>02 · التنسيق متعدد الموردين</Kicker>
-            <div style={{ fontSize: 21.8, fontWeight: 900 }}>نجاح التنسيق بسير عمل واحد</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              {[
-                { n: "Huawei", v: VENDORS.huawei, c: C.huawei },
-                { n: "Ericsson", v: VENDORS.ericsson, c: C.ericsson },
-              ].map((x) => (
-                <div key={x.n} style={{ border: `1.5px solid ${alpha(x.c, 0.4)}`, borderRadius: 14, padding: "10px 8px", textAlign: "center", background: alpha(x.c, 0.05) }}>
-                  <div style={{ fontFamily: "Inter, sans-serif", fontSize: 19.3, fontWeight: 900, color: x.c }}>{x.n}</div>
-                  <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: 40.1, color: x.c, lineHeight: 1.1, direction: "ltr" }}>{x.v.orchestration}%</div>
-                  <div style={{ fontSize: 19, fontWeight: 700, color: C.inkSoft }}>نجاح التنسيق</div>
-                </div>
-              ))}
-            </div>
-            <Line
-              label="كبح إجراءات التسليم (Handover · HO)"
-              value={<N>{VENDORS.huawei.handover}% · {VENDORS.ericsson.handover}%</N>}
-            />
-            <Line
-              label="نجاح الاستعادة (Restoration)"
-              value={<N>{VENDORS.huawei.restoration}% · {VENDORS.ericsson.restoration}%</N>}
-            />
-            <div style={{ fontSize: 18.5, fontWeight: 700, color: C.inkMuted }}></div>
-          </div>
-
           {/* restoration */}
-          <div style={col(3)}>
-            <Kicker color={tone}>03 · الاستعادة</Kicker>
-            <div style={{ fontSize: 21.8, fontWeight: 900 }}>زمن اكتمال الاستعادة حسب تقنية النفاذ الراديوي (RAT)</div>
+          <div style={col(2)}>
+            <Kicker color={tone}>02 · الاستعادة</Kicker>
+            <div style={{ fontSize: 20, fontWeight: 900 }}>زمن الاستعادة حسب الجيل</div>
             {RESTORATION.map((r, i) => {
               const ratFull =
                 r.rat === "2G"
@@ -391,14 +356,8 @@ export const ResControlResults: React.FC = () => {
                   : r.rat === "3G"
                     ? { ar: "الجيل الثالث", en: "3G" }
                     : { ar: "الجيل الرابع", en: "4G" };
-              const detailFull =
-                r.rat === "2G"
-                  ? ""
-                  : r.rat === "3G"
-                    ? ""
-                    : "";
               return (
-                <div key={r.rat} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <div key={r.rat} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                     <span style={{ fontSize: 20.5, fontWeight: 900 }}>
                       {ratFull.ar}{" "}
@@ -407,19 +366,13 @@ export const ResControlResults: React.FC = () => {
                     <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: 28, color: tone, direction: "ltr", flexShrink: 0 }}>{r.label}</span>
                   </div>
                   <div style={{ height: 14, background: "rgba(15,23,42,0.06)", borderRadius: 6, overflow: "hidden" }}>
-                    <motion.div initial={{ width: 0 }} animate={{ width: step >= 3 ? `${(r.minutes / 10) * 100}%` : 0 }} transition={{ duration: 0.8, delay: 0.15 * i, ease: EASE }} style={{ height: "100%", background: accColors[i], borderRadius: 6 }} />
-                  </div>
-                  <div style={{ fontSize: 17.5, fontWeight: 700, color: C.inkSoft, lineHeight: 1.35 }}>
-                    {detailFull}
+                    <motion.div initial={{ width: 0 }} animate={{ width: step >= 2 ? `${(r.minutes / 10) * 100}%` : 0 }} transition={{ duration: 0.8, delay: 0.15 * i, ease: EASE }} style={{ height: "100%", background: accColors[i], borderRadius: 6 }} />
                   </div>
                 </div>
               );
             })}
           </div>
         </div>
-        <Show step={step} at={3}>
-          <Takeaway color={tone}>نظام عزل مكاني قابل للتراجع الآمن، يخضع لتأثير كثافة الخلايا الراديوية، وينفَّذ بسلاسة عبر بيئات متعددة الموردين.</Takeaway>
-        </Show>
       </div>
     </ResStage>
   );

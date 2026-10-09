@@ -83,7 +83,6 @@ export const slideRegistry: Record<string, Render> = {
   "c1-stability": simple(C.C1Stability),
   "c1-convergence": simple(C.C1Convergence),
   "c1-budget": simple(C.C1Budget),
-  "c1-baselines": simple(C.C1Baselines),
   "c1-decision": simple(C.C1Decision),
   "c2-problem": simple(C.C2Problem),
   "c2-model-extension": simple(C.C2ModelExtension),
@@ -94,8 +93,6 @@ export const slideRegistry: Record<string, Render> = {
   "c3-problem": simple(C.C3Problem),
   "c3-architecture": simple(C.C3Architecture),
   "c3-isolation": simple(C.C3Isolation),
-  "c3-closed-loop": simple(C.C3ClosedLoop),
-  "c3-restoration": simple(C.C3Restoration),
   "c3-operational-results": simple(C.C3OperationalResults),
   "c-three-contributions": simple(C.ContribThreeContributions),
 

@@ -13,6 +13,139 @@ const RND = ALG.random.color;
 
 const REPAIR_BEATS = ["حل غير صالح", "إصلاح الميزانية", "إصلاح التغطية", "حل صالح", "عودة إلى البحث"];
 
+/**
+ * مثال يمين الشاشة — عمود ضيق لا يضغط مخطط الإصلاح.
+ * القصة: اخترنا 3 أبراج والميزانية 100؛ نلغي الأضعف فائدة.
+ */
+const REPAIR_SIDE = {
+  budget: 100,
+  cmin: 90,
+  /** تغطية المثال: قبل الإلغاء 92%، بعد إلغاء C تبقى 91% (> Cmin) — لا إضافة برج. */
+  covBefore: 92,
+  covAfterDrop: 91,
+  towers: [
+    { id: "A", name: "برج 1", cost: 30, note: "تغطية جيدة" },
+    { id: "B", name: "برج 2", cost: 35, note: "تغطية جيدة" },
+    { id: "C", name: "برج 3", cost: 45, note: "تكلفة عالية · تغطية ضعيفة" },
+  ],
+} as const;
+
+const RepairSideExample: React.FC<{ step: number }> = ({ step }) => {
+  const dropC = step >= 2;
+  const total = dropC ? 65 : 110;
+  const budgetOk = total <= REPAIR_SIDE.budget;
+  const cov = dropC ? REPAIR_SIDE.covAfterDrop : REPAIR_SIDE.covBefore;
+  const covOk = cov >= REPAIR_SIDE.cmin;
+  const fullyOk = budgetOk && covOk;
+
+  const story =
+    step <= 1
+      ? "الخوارزمية اختارت الأبراج الثلاثة. المجموع 110 مليون — أكبر من الميزانية 100."
+      : step === 2
+        ? "نُلغي «برج ضعيف» فقط. الميزانية تصبح 65M والتغطية 91% — ما زالت فوق الحد. الحل مقبول **بدون** إضافة برج بديل."
+        : step === 3
+          ? "مسار منفصل: **فقط إن** انخفضت التغطية عن Cmin نُفعّل موقعاً مرشحاً واحداً. إلغاء برج ليس «استبدالاً» إلزامياً."
+          : "الحل صالح (ميزانية ✓ وتغطية ✓). نُعيده إلى AGA و BPSO ونكمل البحث.";
+
+  return (
+    <div
+      style={{
+        height: "100%",
+        minHeight: 0,
+        background: "#fff",
+        borderRadius: 16,
+        border: `2px solid ${fullyOk ? `${C.green}55` : `${C.red}55`}`,
+        padding: "12px 14px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        boxSizing: "border-box",
+        overflow: "auto",
+      }}
+    >
+      <div>
+        <div style={{ fontSize: 18, fontWeight: 900, color: C.ink }}>مثال سريع</div>
+        <div style={{ fontSize: 14, fontWeight: 800, color: C.inkMuted, marginTop: 2 }}>
+          الميزانية المسموحة = <span style={{ fontFamily: "Inter, sans-serif" }}>100</span> مليون
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {REPAIR_SIDE.towers.map((t) => {
+          const on = !(dropC && t.id === "C");
+          const highlightDrop = step >= 2 && t.id === "C";
+          return (
+            <motion.div
+              key={t.id}
+              layout
+              style={{
+                borderRadius: 12,
+                padding: "10px 12px",
+                background: on ? "rgba(66,129,119,0.1)" : "rgba(176,58,46,0.08)",
+                border: highlightDrop ? `2px solid ${C.red}` : on ? `1.5px solid ${C.teal}66` : `1.5px dashed ${C.red}66`,
+                opacity: highlightDrop ? 0.85 : 1,
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 17, fontWeight: 900, color: C.ink }}>{t.name}</span>
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 900,
+                    color: on ? C.teal : C.red,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {on ? "نُرقّي ✓" : "نُلغي ✗"}
+                </span>
+              </div>
+              <div style={{ marginTop: 4, fontSize: 15, fontWeight: 800, color: C.inkSoft }}>
+                تكلفة <span style={{ fontFamily: "Inter, sans-serif" }}>{t.cost}</span>M · {t.note}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      <div
+        style={{
+          borderRadius: 12,
+          padding: "10px 12px",
+          background: budgetOk ? "rgba(46,125,91,0.12)" : "rgba(176,58,46,0.1)",
+          textAlign: "center",
+        }}
+      >
+        <div style={{ fontSize: 15, fontWeight: 800, color: C.inkSoft }}>مجموع التكلفة</div>
+        <div style={{ fontSize: 28, fontWeight: 900, fontFamily: "Inter, sans-serif", color: budgetOk ? C.green : C.red, lineHeight: 1.15 }}>
+          {total}
+          <span style={{ fontSize: 16 }}> / {REPAIR_SIDE.budget}</span>
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 900, color: budgetOk ? C.green : C.red, marginTop: 2 }}>
+          {budgetOk ? "ضمن الميزانية ✓" : "تجاوز الميزانية ✗"}
+        </div>
+        {dropC && (
+          <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.hair}` }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: C.inkSoft }}>التغطية بعد الإلغاء</div>
+            <div style={{ fontSize: 22, fontWeight: 900, fontFamily: "Inter, sans-serif", color: covOk ? C.green : C.gold }}>
+              {cov}%
+              <span style={{ fontSize: 14, color: C.inkMuted }}> (حد أدنى {REPAIR_SIDE.cmin}%)</span>
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 900, color: covOk ? C.green : C.gold }}>
+              {covOk ? "لا حاجة لإضافة برج" : "هنا فقط نُضيف موقعاً مرشحاً"}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ fontSize: 15, fontWeight: 800, color: C.ink, lineHeight: 1.5, flex: 1 }}>{story}</div>
+
+      <Chip color={C.gold} solid>
+        نفس الإصلاح على AGA و BPSO
+      </Chip>
+    </div>
+  );
+};
+
 export const C1RepairEngine: React.FC = () => {
   const { step, goNext, goToStep } = useBeats(5);
   const focus = step === 2 ? "budget" : step === 3 ? "coverage" : step >= 4 ? "all" : null;
@@ -27,7 +160,7 @@ export const C1RepairEngine: React.FC = () => {
       goToStep={goToStep}
       source=""
     >
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 8 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 8, flexShrink: 0 }}>
         {[
           { t: "Infeasible", d: "تجاوز الميزانية أو تغطية دون الحد", c: C.red, on: step >= 1 },
           { t: "Adaptive Repair", d: "حذف الأدنى جدوى أو إضافة الأعلى جدوى", c: C.gold, on: step >= 2 },
@@ -39,18 +172,23 @@ export const C1RepairEngine: React.FC = () => {
           </div>
         ))}
       </div>
-      <div style={{ flex: 1, minHeight: 280, display: "grid", gridTemplateColumns: "1fr 260px", gap: 12, minWidth: 0 }}>
-        <div style={{ minHeight: 280, height: "100%", minWidth: 0, overflow: "hidden" }}>
+
+      {/* RTL: العمود الأول يظهر يميناً = المثال · الثاني يساراً = المخطط */}
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: "grid",
+          gridTemplateColumns: "minmax(260px, 300px) 1fr",
+          gap: 12,
+          alignItems: "stretch",
+        }}
+      >
+        <Show step={step} at={1} style={{ minHeight: 0, height: "100%" }}>
+          <RepairSideExample step={step} />
+        </Show>
+        <div style={{ minHeight: 0, minWidth: 0, overflow: "hidden" }}>
           <RepairEngine stage={engineStage} showFairness={false} fairness="locked" focus={focus} />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 12, minWidth: 0, overflow: "hidden" }}>
-          <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.4 }}>الإصلاح ليس تفصيلاً برمجياً</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: C.inkSoft, lineHeight: 1.55 }}>
-          بعد كل تحديث للحل، تُزال العناصر الأقل كفاءة من حيث التغطية مقابل التكلفة عند تجاوز الحد الأقصى للميزانية (B)، ثم تُضاف العناصر الأعلى كفاءة حتى تحقيق الحد الأدنى المطلوب من التغطية
-          </div>
-          <Chip color={C.gold} solid>
-            آلية مشتركة بين AGA و BPSO
-          </Chip>
         </div>
       </div>
     </ContribStage>

@@ -38,7 +38,6 @@ export const SLIDE_ORDER: ReadonlyArray<{ id: string; section: SectionId }> = [
   { id: "c1-stability", section: "contributions" },
   { id: "c1-convergence", section: "contributions" },
   { id: "c1-budget", section: "contributions" },
-  { id: "c1-baselines", section: "contributions" },
   { id: "c1-decision", section: "contributions" },
   { id: "c2-problem", section: "contributions" },
   { id: "c2-model-extension", section: "contributions" },
@@ -49,8 +48,6 @@ export const SLIDE_ORDER: ReadonlyArray<{ id: string; section: SectionId }> = [
   { id: "c3-problem", section: "contributions" },
   { id: "c3-architecture", section: "contributions" },
   { id: "c3-isolation", section: "contributions" },
-  { id: "c3-closed-loop", section: "contributions" },
-  { id: "c3-restoration", section: "contributions" },
   { id: "c3-operational-results", section: "contributions" },
   { id: "c-three-contributions", section: "contributions" },
 

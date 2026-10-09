@@ -32,6 +32,33 @@ const App: React.FC = () => {
     preloadThesisFigures();
   }, []);
 
+  useEffect(() => {
+    const syncViewport = () => {
+      const layout = window.innerHeight;
+      const visual = window.visualViewport?.height ?? layout;
+      const chrome = Math.max(0, window.outerHeight - layout);
+      const clientTop = window.screenY + chrome;
+      const clientBottom = clientTop + layout;
+      const availTop = Number((window.screen as Screen & { availTop?: number }).availTop) || 0;
+      const availBottom = availTop + window.screen.availHeight;
+      const coveredByTaskbar = Math.max(0, clientBottom - availBottom);
+      const h = Math.max(240, Math.floor(Math.min(layout, visual) - coveredByTaskbar));
+      document.documentElement.style.setProperty("--app-h", `${h}px`);
+    };
+    const onFullscreen = () => {
+      requestAnimationFrame(() => requestAnimationFrame(syncViewport));
+    };
+    syncViewport();
+    window.addEventListener("resize", syncViewport);
+    window.visualViewport?.addEventListener("resize", syncViewport);
+    document.addEventListener("fullscreenchange", onFullscreen);
+    return () => {
+      window.removeEventListener("resize", syncViewport);
+      window.visualViewport?.removeEventListener("resize", syncViewport);
+      document.removeEventListener("fullscreenchange", onFullscreen);
+    };
+  }, []);
+
   // Keyboard Navigation
   useKeyboard({
     onNext: goNext,

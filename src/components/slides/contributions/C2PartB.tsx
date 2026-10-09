@@ -2,7 +2,8 @@ import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { C, Chip, ContribStage, KpiTile, Show, SyriaBase, T, hexPts, useBeats, useSites } from "./kit";
 import { FairMap, useFairPairs } from "./C2PartA";
-import { CH4_RESULTS, CH5_FINAL, FAIRNESS_EFFECT } from "./facts";
+import { CH4_RESULTS, CH5_FINAL, FAIRNESS_EFFECT, SCENARIOS } from "./facts";
+import { alpha } from "../../design/tokens";
 
 /* ═════════════ II-7 · Effect of fairness ═════════════ */
 
@@ -32,11 +33,13 @@ const SfiGauge: React.FC<{ value: number; label: string }> = ({ value, label }) 
   );
 };
 
+const fairnessTone = (level: number) =>
+  level === 0 ? { color: C.inkMuted, bg: alpha(C.ink, 0.06) } : level === 1 ? { color: C.gold, bg: alpha(C.gold, 0.14) } : { color: C.green, bg: alpha(C.green, 0.14) };
+
 export const C2FairnessEffect: React.FC = () => {
   const { step, goNext, goToStep } = useBeats(4);
   const idx = Math.min(step, 3) - 1;
   const row = FAIRNESS_EFFECT[idx];
-  const pairs = useFairPairs();
   return (
     <ContribStage
       contribution={2}
@@ -47,19 +50,112 @@ export const C2FairnessEffect: React.FC = () => {
       goToStep={goToStep}
       source=""
     >
-      <div style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "1fr 1.15fr 1fr", gap: 16, alignItems: "center" }}>
-        <div style={{ height: "100%", minHeight: 0 }}>
-          <FairMap t={idx === 0 ? 0 : idx === 1 ? 0.55 : 1} pairs={pairs} idSuffix="fe" />
+      <div style={{ flex: 1, minHeight: 0, height: "100%", display: "grid", gridTemplateColumns: "1.35fr 1.05fr 0.95fr", gap: 16, alignItems: "stretch", overflow: "hidden" }}>
+        <div
+          style={{
+            minHeight: 0,
+            height: "100%",
+            background: "#fff",
+            borderRadius: 16,
+            border: `1.5px solid ${C.hair}`,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            style={{
+              padding: "8px 14px",
+              fontSize: 16.5,
+              fontWeight: 900,
+              color: C.maroon,
+              background: alpha(C.maroon, 0.07),
+              borderBottom: `1.5px solid ${C.hair}`,
+              flexShrink: 0,
+            }}
+          >
+            جدول سيناريوهات الاختبار
+          </div>
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: "grid",
+              gridTemplateRows: "auto repeat(5, 1fr)",
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "0.7fr 0.9fr 1.35fr 0.85fr",
+                background: C.maroon,
+                color: "#fff",
+                fontWeight: 800,
+                fontSize: 14.5,
+                padding: "8px 10px",
+                alignItems: "center",
+              }}
+            >
+              <div>السيناريو</div>
+              <div>الميزانية</div>
+              <div>قيد العدالة المستهدفة</div>
+              <div style={{ textAlign: "center" }}>عدد المواقع</div>
+            </div>
+            {SCENARIOS.map((s, i) => {
+              const on = s.id === row.scenario;
+              const tone = fairnessTone(s.level);
+              return (
+                <motion.div
+                  key={s.id}
+                  initial={false}
+                  animate={{
+                    backgroundColor: on ? alpha(C.green, 0.16) : i % 2 === 0 ? "#fff" : alpha(C.ink, 0.03),
+                  }}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "0.7fr 0.9fr 1.35fr 0.85fr",
+                    alignItems: "center",
+                    padding: "0 10px",
+                    borderTop: `1px solid ${C.hair}`,
+                    boxShadow: on ? `inset -4px 0 0 ${C.green}` : undefined,
+                    minHeight: 0,
+                  }}
+                >
+                  <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: 17.5, color: on ? C.green : C.ink }}>{s.id}</div>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: C.ink }}>{s.budget}</div>
+                  <div>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        fontSize: 14,
+                        fontWeight: 800,
+                        color: on ? "#fff" : tone.color,
+                        background: on ? C.green : tone.bg,
+                        borderRadius: 999,
+                        padding: "3px 9px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {s.fairness}
+                    </span>
+                  </div>
+                  <div dir="ltr" style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: 16.5, color: C.ink }}>
+                    {s.sites}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={{ fontSize: 19.8, fontWeight: 900, color: C.inkSoft }}>مؤشر العدالة المكانية · BPSO</div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 0, overflow: "hidden" }}>
+          <div style={{ fontSize: 18.5, fontWeight: 900, color: C.inkSoft }}>مؤشر العدالة المكانية · BPSO</div>
           <AnimatePresence mode="wait">
-            <motion.div key={row.fiBpso} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.1 }} transition={{ duration: 0.4 }} style={{ fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: "clamp(80px, 10.98vw, 140px)", color: C.green, lineHeight: 1 }}>
+            <motion.div key={row.fiBpso} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.1 }} transition={{ duration: 0.4 }} style={{ fontFamily: "Inter, sans-serif", fontWeight: 900, fontSize: "clamp(64px, 8vw, 110px)", color: C.green, lineHeight: 1 }}>
               {row.fiBpso.toFixed(2)}
             </motion.div>
           </AnimatePresence>
-          <div style={{ width: "80%", height: 150 }}>
+          <div style={{ width: "80%", height: 120, flexShrink: 0 }}>
             <SfiGauge value={row.fiBpso} label={row.label} />
           </div>
           <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
@@ -71,7 +167,7 @@ export const C2FairnessEffect: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "grid", gap: 10, minHeight: 0, alignContent: "center" }}>
           <KpiTile label="التغطية · BPSO" value={`${row.covBpso.toFixed(2)}%`} color={C.teal} />
           <KpiTile label="مؤشر العدالة · AGA" value={row.fiAga.toFixed(2)} color={C.maroon} note={`التغطية ${row.covAga.toFixed(2)}%`} />
           <Show step={step} at={4} from="left">

@@ -128,7 +128,7 @@ export const C1Pipeline: React.FC = () => {
         <Show step={step} at={8} style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
           {[
             { t: "شبكة حقيقية", d: "79,268 موقعاً · MTN وSyriatel" },
-            { t: "مسألة محدودة الموارد", d: "تغطية أعلى بكلفة وطاقة أقل" },
+            { t: "مسألة محدودية الموارد", d: "تغطية أعلى بكلفة وطاقة أقل" },
             { t: "قرار قابل للتنفيذ", d: "أي المواقع تُرقّى أولاً" },
           ].map((c) => (
             <div key={c.t} style={{ background: "#fff", borderRadius: 14, border: `1px solid ${C.hair}`, padding: "16px 18px" }}>

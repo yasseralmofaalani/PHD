@@ -1,22 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
-import {
-  Brain,
-  Network,
-  Radio,
-  Satellite,
-  Boxes,
-  Layers,
-  type LucideIcon,
-} from "lucide-react";
+import { Network, Scale, Waypoints, Radio, type LucideIcon } from "lucide-react";
 import { slideContainerStyle, techGridStyle, SlideHeader, SectionBadge, SlideFooter } from "./shared";
 import { useStepReveal } from "../../../hooks/useStepReveal";
 import { C, EASE } from "../results/stage";
 import { alpha } from "../../design/tokens";
-
-const TEAL = "#428177";
-const MAROON = "#6b1f2a";
-const GOLD = "#c8951a";
 
 type Horizon = {
   n: string;
@@ -24,63 +12,45 @@ type Horizon = {
   claim: string;
   color: string;
   icon: LucideIcon;
-  axis: string;
 };
 
 const HORIZONS: Horizon[] = [
   {
     n: "01",
-    title: "تخطيط ذكي ديناميكي",
-    claim: "دمج نماذج التنبؤ بالطلب مع خوارزميات التحسين لدعم قرارات ترقية أكثر استجابة لتغيّر الحركة.",
-    color: TEAL,
+    title: "تطوير نموذج تخطيط ديناميكي لترقية الشبكات الخليوية",
+    claim:
+      "الانتقال من تخطيط الترقية اعتماداً على بيانات ثابتة إلى تخطيط ديناميكي يأخذ في الحسبان التغير المستقبلي في عدد السكان، وتوزع الطلب على الخدمة، والتوسع العمراني. ويسمح ذلك بتحديث أولويات ترقية الأبراج دورياً وفق الاحتياجات الفعلية والمتوقعة.",
+    color: "#428177",
     icon: Network,
-    axis: "تخطيط",
   },
   {
     n: "02",
-    title: "ذكاء اصطناعي تكيّفي",
-    claim: "توظيف التعلم الآلي والتعلم المعزز للانتقال من التخطيط الساكن إلى تحكم استباقي يتكيّف مع الشبكة.",
-    color: TEAL,
-    icon: Brain,
-    axis: "تخطيط",
+    title: "تطوير مفهوم العدالة المكانية لقياس جودة الخدمة الفعلية",
+    claim:
+      "توسيع مفهوم العدالة من توزيع أعداد الأبراج المطوّرة إلى قياس التغطية الفعلية، وعدد السكان المستفيدين، وجودة الخدمة في المناطق الحضرية والريفية. ويساعد ذلك على تقييم ما إذا كانت الترقية تحقق استفادة متوازنة للسكان، وليس مجرد توزيع متوازن للأبراج.",
+    color: "#6b1f2a",
+    icon: Scale,
   },
   {
     n: "03",
-    title: "تنسيق أوسع للموردين",
-    claim: "دعم مزيد من مورّدي الشبكة وتعزيز قابلية التشغيل البيني في البيئات الخلوية غير المتجانسة.",
-    color: MAROON,
-    icon: Boxes,
-    axis: "تشغيل",
+    title: "تحسين خوارزميات التخطيط متعدد الأهداف",
+    claim:
+      "دراسة خوارزميات تحسين متقدمة، مثل خوارزميات الجبهة غير المهيمن عليها، للوصول إلى مجموعة حلول تبيّن المفاضلات بين التغطية والكلفة واستهلاك الطاقة والعدالة المكانية. ويساعد ذلك متخذ القرار على اختيار الحل الأنسب وفق الميزانية والأولويات المعتمدة.",
+    color: "#c8951a",
+    icon: Waypoints,
   },
   {
     n: "04",
-    title: "تكامل مع الشبكات المفتوحة",
-    claim: "دراسة دمج الإطار مع O-RAN وRIC وxApps لتحقيق تحكم أكثر مرونة في الشبكات المستقبلية.",
-    color: MAROON,
+    title: "توسيع نموذج التحسين ليشمل الترابط والتداخل بين الخلايا",
+    claim:
+      "تطوير النموذج ليأخذ في الحسبان التداخل الراديوي والتأثير المتبادل بين الخلايا المتجاورة عند اختيار الأبراج المراد ترقيتها، بدلاً من تقييم كل برج بصورة منفصلة. ويساعد ذلك على إنتاج خطط ترقية أكثر واقعية من الناحية التشغيلية.",
+    color: "#2e7d5b",
     icon: Radio,
-    axis: "تشغيل",
-  },
-  {
-    n: "05",
-    title: "التوسع نحو شبكات 6G",
-    claim: "تكييف الإطار مع متطلبات الجيل السادس، بما فيها البنى الراديوية الحديثة وتقنيات التحكم البرمجي.",
-    color: GOLD,
-    icon: Satellite,
-    axis: "أفق تقني",
-  },
-  {
-    n: "06",
-    title: "التوأم الرقمي للشبكة",
-    claim: "بناء نموذج رقمي يحاكي الشبكة وبيئتها الجغرافية لاختبار سيناريوهات الترقية والتحكم قبل التطبيق الميداني.",
-    color: GOLD,
-    icon: Layers,
-    axis: "أفق تقني",
   },
 ];
 
 export const SlideS5_09_FuturePerspectives: React.FC = () => {
-  const { step, totalSteps, goNext } = useStepReveal({ totalSteps: 4, initialStep: 1 });
-  const visibleCount = step === 1 ? 2 : step === 2 ? 4 : 6;
+  const { step, totalSteps, goNext } = useStepReveal({ totalSteps: HORIZONS.length, initialStep: 1 });
 
   return (
     <div
@@ -91,7 +61,7 @@ export const SlideS5_09_FuturePerspectives: React.FC = () => {
       <div style={techGridStyle} />
       <SlideHeader
         titleAr="الآفاق المستقبلية"
-        badge={<SectionBadge text="أجندة بحثية · الفصل السابع" variant="primary" />}
+        badge={<SectionBadge text="" variant="primary" />}
       />
 
       <div
@@ -100,116 +70,62 @@ export const SlideS5_09_FuturePerspectives: React.FC = () => {
           zIndex: 5,
           flex: 1,
           minHeight: 0,
-          display: "flex",
-          flexDirection: "column",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gridTemplateRows: "1fr 1fr",
           gap: 12,
         }}
       >
-       
-
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gridTemplateRows: "repeat(2, minmax(0, 1fr))",
-            gap: 12,
-          }}
-        >
-          {HORIZONS.map((h, i) => {
-            const on = i < visibleCount;
-            const Icon = h.icon;
-            return (
-              <motion.div
-                key={h.n}
-                animate={{
-                  opacity: on ? 1 : 0.12,
-                  y: on ? 0 : 10,
-                }}
-                transition={{ duration: 0.4, ease: EASE }}
-                style={{
-                  background: "#fff",
-                  borderRadius: 16,
-                  border: `1.5px solid ${on ? alpha(h.color, 0.35) : "rgba(15,23,42,0.08)"}`,
-                  borderTop: `5px solid ${h.color}`,
-                  boxShadow: on ? "0 8px 22px rgba(15,23,42,0.07)" : "none",
-                  padding: "14px 16px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                  minHeight: 0,
-                  overflow: "hidden",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 11,
-                      background: alpha(h.color, 0.12),
-                      color: h.color,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Icon size={20} />
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 900,
-                        color: h.color,
-                        background: alpha(h.color, 0.1),
-                        borderRadius: 999,
-                        padding: "2px 10px",
-                      }}
-                    >
-                      {h.axis}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "Inter, sans-serif",
-                        fontSize: 18,
-                        fontWeight: 900,
-                        color: h.color,
-                      }}
-                    >
+        {HORIZONS.map((h, i) => {
+          const on = i < step;
+          const Icon = h.icon;
+          return (
+            <motion.div
+              key={h.n}
+              animate={{ opacity: on ? 1 : 0.14, y: on ? 0 : 8 }}
+              transition={{ duration: 0.4, ease: EASE }}
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                border: `1.5px solid ${on ? alpha(h.color, 0.32) : "rgba(15,23,42,0.08)"}`,
+                borderRight: `7px solid ${h.color}`,
+                boxShadow: on ? "0 8px 22px rgba(15,23,42,0.07)" : "none",
+                padding: "10px 14px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+                minHeight: 0,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 10,
+                    background: alpha(h.color, 0.12),
+                    color: h.color,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon size={17} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 18, fontWeight: 900, color: h.color, flexShrink: 0 }}>
                       {h.n}
                     </span>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: C.ink, lineHeight: 1.28 }}>{h.title}</div>
                   </div>
                 </div>
-                <div
-                  style={{
-                    fontSize: "clamp(20px, 1.7vw, 24px)",
-                    fontWeight: 900,
-                    color: C.ink,
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {h.title}
-                </div>
-                <div
-                  style={{
-                    fontSize: 17.5,
-                    fontWeight: 700,
-                    color: C.inkSoft,
-                    lineHeight: 1.5,
-                    flex: 1,
-                  }}
-                >
-                  {h.claim}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: C.inkSoft, lineHeight: 1.42 }}>{h.claim}</div>
+            </motion.div>
+          );
+        })}
       </div>
 
       <SlideFooter slideLabel=" " />

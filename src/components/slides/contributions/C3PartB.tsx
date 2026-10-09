@@ -146,16 +146,7 @@ export const C3OperationalResults: React.FC = () => {
           </Show>
         ))}
       </div>
-      <Show step={step} at={4} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 18, alignItems: "center", marginTop: 10, flexShrink: 0 }}>
-        <Formula dark size={18}>
-          Spillover Ratio ∝ 1 / Infrastructure Density
-        </Formula>
-        <div style={{ fontSize: 19, fontWeight: 800, color: C.nightInkSoft, lineHeight: 1.55 }}>
-          ارتفاع نسبة التسريب في البيئة الريفية ناتج طبيعي عن كبر نصف قطر الخلايا (Macro Cells) وتدني الكثافة؛
-          <br />
-          ويُعالج عبر التقييد الانتقائي (حجب بيانات الحزم، إنهاء جلسات الحامل، والتحكم بسياسات التنقل)
-        </div>
-      </Show>
+     
     </ContribStage>
   );
 };

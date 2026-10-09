@@ -1,7 +1,9 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
+import { LayoutGrid, MapPin, Repeat, Scale, Wrench } from "lucide-react";
 import { ThesisImage } from "../../ui/ThesisImage";
-import { C, CITIES, Chip, ContribStage, Formula, MapSite, Show, ShowG, SyriaBase, T, makeSites, insideSyria, useBeats } from "./kit";
+import { alpha } from "../../design/tokens";
+import { C, CITIES, Chip, ContribStage, Formula, MapSite, Show, ShowG, SyriaBase, T, makeSites, insideSyria, useBeats, EASE } from "./kit";
 import { RepairEngine } from "./RepairEngine";
 import { CH4_RESULTS } from "./facts";
 
@@ -432,6 +434,307 @@ export const C2MapTransformation: React.FC = () => {
 
 /* ═════════════ II-5 · Fairness inside the search (hero) ═════════════ */
 
+const PATH_STAGES = [
+  {
+    n: "01",
+    title: "تجهيز البيانات المكانية",
+    body: "مواقع الأبراج وبيانات التغطية والتكلفة والطاقة",
+    chips: ["أبراج", "تغطية", "تكلفة"],
+    color: C.teal,
+    Icon: MapPin,
+    fair: false,
+  },
+  {
+    n: "02",
+    title: "توليد حل مرشح",
+    body: "اختيار مواقع للترقية إلى الجيل الخامس",
+    chips: ["x ∈ {0,1}", "ترقية 5G"],
+    color: C.tealDeep,
+    Icon: LayoutGrid,
+    fair: false,
+  },
+  {
+    n: "03",
+    title: "تقييم الأهداف والقيود",
+    body: "التغطية والتكلفة والطاقة ومؤشر العدالة SFI",
+    chips: ["تغطية", "تكلفة", "طاقة", "SFI"],
+    color: C.green,
+    Icon: Scale,
+    fair: true,
+  },
+  {
+    n: "04",
+    title: "إصلاح القيود",
+    body: "تجاوز الميزانية أو نقص التغطية أو الشرط المكاني",
+    chips: ["ميزانية", "تغطية", "αj"],
+    color: C.green,
+    Icon: Wrench,
+    fair: true,
+  },
+  {
+    n: "05",
+    title: "تطوير الحل وإعادة التقييم",
+    body: "تكرار البحث حتى بلوغ حل جيد وفق معيار التوقف",
+    chips: ["pBest", "gBest", "توقف"],
+    color: C.maroon,
+    Icon: Repeat,
+    fair: false,
+  },
+] as const;
+
+const FairSearchPath: React.FC<{ compact?: boolean; highlight?: number }> = ({ compact, highlight }) => {
+  if (compact) {
+    return (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(5, 1fr)",
+          gap: 8,
+          direction: "rtl",
+          flexShrink: 0,
+        }}
+      >
+        {PATH_STAGES.map((s, i) => {
+          const on = highlight === i + 1;
+          const compactTitle = s.n === "01" ? "تجهيز البيانات" : s.n === "05" ? "إعادة التقييم" : s.title;
+          return (
+            <div
+              key={s.n}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 10px",
+                borderRadius: 12,
+                background: on ? alpha(s.color, 0.12) : "#fff",
+                border: `1.5px solid ${on ? s.color : C.hair}`,
+                minWidth: 0,
+              }}
+            >
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
+                  flexShrink: 0,
+                  background: on ? s.color : alpha(s.color, 0.14),
+                  color: on ? "#fff" : s.color,
+                  fontFamily: "Inter, sans-serif",
+                  fontWeight: 900,
+                  fontSize: 13,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {s.n}
+              </div>
+              <div
+                style={{
+                  fontSize: 16.5,
+                  fontWeight: 800,
+                  lineHeight: 1.25,
+                  minWidth: 0,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {compactTitle}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        flex: 1,
+        minHeight: 0,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-start",
+        gap: 12,
+        paddingTop: 6,
+        paddingBottom: 0,
+      }}
+    >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 28px 1fr 28px 1fr 28px 1fr 28px 1fr",
+          direction: "rtl",
+          alignItems: "stretch",
+          flex: "0 0 auto",
+        }}
+      >
+        {PATH_STAGES.map((s, i) => {
+          const Icon = s.Icon;
+          const next = PATH_STAGES[i + 1];
+          return (
+            <React.Fragment key={s.n}>
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: i * 0.09, ease: EASE }}
+                style={{ minWidth: 0, gridColumn: i * 2 + 1 }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    background: "#fff",
+                    borderRadius: 18,
+                    border: `2px solid ${s.fair ? C.green : C.hair}`,
+                    boxShadow: s.fair ? `0 10px 24px ${alpha(C.green, 0.14)}` : "0 8px 20px rgba(15,23,42,0.06)",
+                  }}
+                >
+                  <div style={{ height: 5, background: s.color, borderRadius: "16px 16px 0 0" }} />
+                  <div style={{ padding: "10px 12px 12px", display: "flex", flexDirection: "column", gap: 7 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 11,
+                          background: s.color,
+                          color: "#fff",
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 900,
+                          fontSize: 15,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {s.n}
+                      </div>
+                      <Icon size={22} color={s.color} strokeWidth={2.4} />
+                    </div>
+                    <div style={{ fontSize: 19, fontWeight: 900, lineHeight: 1.35, color: C.ink }}>{s.title}</div>
+                    <div style={{ fontSize: 16.5, fontWeight: 700, lineHeight: 1.45, color: C.inkSoft }}>{s.body}</div>
+                    <div style={{ display: "flex", flexWrap: "nowrap", gap: 6, overflow: "hidden" }}>
+                      {s.chips.map((ch) => (
+                        <span
+                          key={ch}
+                          style={{
+                            fontSize: 14.5,
+                            fontWeight: 800,
+                            color: ch === "SFI" || ch === "αj" ? "#fff" : s.color,
+                            background: ch === "SFI" || ch === "αj" ? C.green : alpha(s.color, 0.12),
+                            borderRadius: 999,
+                            padding: "4px 10px",
+                            fontFamily:
+                              ch === "SFI" || ch === "x ∈ {0,1}" || ch === "pBest" || ch === "gBest" ? "Inter, sans-serif" : "Cairo, sans-serif",
+                          }}
+                        >
+                          {ch}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+              {next && (
+                <div
+                  style={{
+                    gridColumn: i * 2 + 2,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: "50%",
+                      background: "#fff",
+                      border: `2px solid ${next.fair || s.fair ? C.green : C.teal}`,
+                      color: next.fair || s.fair ? C.green : C.teal,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <svg width={11} height={11} viewBox="0 0 12 12">
+                      <path d="M8 2 L3 6 L8 10" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                </div>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+
+      <div
+        style={{
+          position: "relative",
+          flexShrink: 0,
+          height: 44,
+          flex: "0 0 auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginTop: 2,
+        }}
+      >
+        <svg viewBox="0 0 1000 40" preserveAspectRatio="none" style={{ position: "absolute", inset: 0, width: "100%", height: 40 }}>
+          <defs>
+            <marker id="fs-back" viewBox="0 0 10 10" refX="5" refY="2.5" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0 10 L5 0 L10 10 z" fill={C.maroon} />
+            </marker>
+          </defs>
+          <motion.path
+            d="M 90 6 L 90 28 H 330"
+            fill="none"
+            stroke={C.maroon}
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.55, ease: EASE }}
+          />
+          <motion.path
+            d="M 670 28 H 710 L 710 10"
+            fill="none"
+            stroke={C.maroon}
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            markerEnd="url(#fs-back)"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.75, ease: EASE }}
+          />
+        </svg>
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            fontSize: 18,
+            fontWeight: 900,
+            color: C.maroon,
+            background: "#fff",
+            border: `1.5px solid ${alpha(C.maroon, 0.28)}`,
+            borderRadius: 999,
+            padding: "7px 20px",
+            lineHeight: 1.2,
+            boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+          }}
+        >
+          تكرار البحث حتى معايير التوقف
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const PSEUDO = [
   { n: 9, t: "عند تجاوز الميزانية (B): إزالة المواقع الأقل جدوى (تغطية/تكلفة)." },
   { n: 10, t: "عند انخفاض التغطية: إضافة المواقع الأعلى جدوى." },
@@ -442,204 +745,221 @@ const PSEUDO = [
 ];
 
 export const C2FairSearch: React.FC = () => {
-  const { step, goNext, goToStep } = useBeats(4);
-  // Progressive reveal of the repair engine so bottom nodes remain visible
-  const engineStage = step <= 1 ? 5 : step === 2 ? 6 : 7;
+  const { step, goNext, goToStep } = useBeats(5);
+  const rest = step - 1;
+  const engineStage = rest <= 1 ? 5 : rest === 2 ? 6 : 7;
   return (
     <ContribStage
       contribution={2}
       title="دمج قيد العدالة ضمن آلية البحث لتوجيه خوارزمية التحسين نحو حلول أكثر توازنًا"
-      beats={["محرك الإصلاح الأساسي", "تفعيل مسار الموازنة المكانية", "التكامل مع الحلقات التكرارية", "إنتاج حلول مقبولة تحقق العدالة"]}
+      beats={["مسار الحل المقترح", "محرك الإصلاح الأساسي", "تفعيل مسار الموازنة المكانية", "التكامل مع الحلقات التكرارية", "إنتاج حلول مقبولة تحقق العدالة"]}
       step={step}
       goNext={goNext}
       goToStep={goToStep}
       source=""
     >
-      <div
+      <Show step={step} at={1} until={2} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+        <FairSearchPath />
+      </Show>
+
+      <Show
+        step={step}
+        at={2}
         style={{
           flex: 1,
           minHeight: 0,
-          display: "grid",
-          gridTemplateColumns: "1.4fr 1fr",
-          gap: 14,
-          alignItems: "stretch",
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
         }}
       >
+        <FairSearchPath compact highlight={4} />
         <div
           style={{
+            flex: 1,
             minHeight: 0,
-            minWidth: 0,
-            background: "#fff",
-            borderRadius: 16,
-            border: `1.5px solid ${C.hair}`,
-            padding: 8,
-            overflow: "hidden",
-            display: "flex",
+            display: "grid",
+            gridTemplateColumns: "1.4fr 1fr",
+            gap: 14,
+            alignItems: "stretch",
           }}
         >
-          <RepairEngine
-            stage={engineStage}
-            showFairness
-            fairness="active"
-            focus={step === 1 ? "fairness" : step === 2 ? "fairness" : step >= 3 ? "all" : null}
-            style={{ flex: 1 }}
-          />
-        </div>
-
-        <div
-          style={{
-            minHeight: 0,
-            minWidth: 0,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-            overflow: "hidden",
-          }}
-        >
-          <Show step={step} at={1} until={3} style={{ flexShrink: 0 }}>
-            <div
-              style={{
-                background: "rgba(46,125,91,0.08)",
-                border: `1.5px solid ${C.green}`,
-                borderRadius: 14,
-                padding: "12px 14px",
-              }}
-            >
-              <div style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.45, color: C.ink }}>
-                معيار العدالة ليس تقييمًا لاحقًا
-                <span style={{ color: C.green }}> بل قيد هيكلي في كل دورة تكرارية</span>
-              </div>
-            </div>
-          </Show>
-
-          <Show step={step} at={2} until={3} style={{ flexShrink: 0 }}>
-            <div
-              style={{
-                background: "#fff",
-                borderRadius: 14,
-                border: `2px solid ${C.green}`,
-                padding: "12px 14px",
-              }}
-            >
-              <div style={{ fontSize: 15, fontWeight: 900, color: C.green, marginBottom: 4, fontFamily: "Inter, sans-serif" }}>
-                مسار العدالة المكانية
-              </div>
-              <div style={{ fontSize: 18.5, fontWeight: 800, lineHeight: 1.45 }}>
-                انتهاك شرط العدالة المكانية → إعادة التوازن الجغرافي للمواقع حتى استيفاء عتبات αj
-              </div>
-            </div>
-          </Show>
-
-          <Show
-            step={step}
-            at={3}
-            until={4}
+          <div
             style={{
-              flex: 1,
               minHeight: 0,
+              minWidth: 0,
+              background: "#fff",
+              borderRadius: 16,
+              border: `1.5px solid ${C.hair}`,
+              padding: 8,
+              overflow: "hidden",
               display: "flex",
-              flexDirection: "column",
             }}
           >
-            <div
-              dir="rtl"
+            <RepairEngine
+              stage={engineStage}
+              showFairness
+              fairness="active"
+              focus={rest === 1 ? "fairness" : rest === 2 ? "fairness" : rest >= 3 ? "all" : null}
+              style={{ flex: 1 }}
+            />
+          </div>
+
+          <div
+            style={{
+              minHeight: 0,
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              overflow: "hidden",
+            }}
+          >
+            <Show step={step} at={2} until={4} style={{ flexShrink: 0 }}>
+              <div
+                style={{
+                  background: "rgba(46,125,91,0.08)",
+                  border: `1.5px solid ${C.green}`,
+                  borderRadius: 14,
+                  padding: "12px 14px",
+                }}
+              >
+                <div style={{ fontSize: 21.5, fontWeight: 900, lineHeight: 1.5, color: C.ink }}>
+                  معيار العدالة ليس تقييمًا لاحقًا
+                  <span style={{ color: C.green }}> بل قيد هيكلي في كل دورة تكرارية</span>
+                </div>
+              </div>
+            </Show>
+
+            <Show step={step} at={3} until={4} style={{ flexShrink: 0 }}>
+              <div
+                style={{
+                  background: "#fff",
+                  borderRadius: 14,
+                  border: `2px solid ${C.green}`,
+                  padding: "12px 14px",
+                }}
+              >
+                <div style={{ fontSize: 16, fontWeight: 900, color: C.green, marginBottom: 4, fontFamily: "Inter, sans-serif" }}>
+                  مسار العدالة المكانية
+                </div>
+                <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1.5 }}>
+                  انتهاك شرط العدالة المكانية → إعادة التوازن الجغرافي للمواقع حتى استيفاء عتبات αj
+                </div>
+              </div>
+            </Show>
+
+            <Show
+              step={step}
+              at={4}
+              until={5}
               style={{
                 flex: 1,
                 minHeight: 0,
-                background: C.ink,
-                color: "#e8efe9",
-                borderRadius: 14,
-                padding: "10px 12px",
                 display: "flex",
                 flexDirection: "column",
-                gap: 4,
-                overflow: "hidden",
               }}
             >
-              <div style={{ fontSize: 15, fontWeight: 900, color: "rgba(232,239,233,0.7)", marginBottom: 2 }}>
-                حلقة الإصلاح داخل الخوارزمية
-              </div>
-              {PSEUDO.map((p) => (
-                <div
-                  key={p.n}
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    fontSize: 16.5,
-                    fontWeight: 700,
-                    padding: "4px 8px",
-                    borderRadius: 6,
-                    background: p.hot ? "rgba(46,125,91,0.45)" : "transparent",
-                    lineHeight: 1.35,
-                  }}
-                >
-                  <span style={{ fontFamily: "Inter, sans-serif", opacity: 0.55, width: 18, flexShrink: 0 }}>{p.n}</span>
-                  <span style={{ minWidth: 0 }}>{p.t}</span>
+              <div
+                dir="rtl"
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  background: C.ink,
+                  color: "#e8efe9",
+                  borderRadius: 14,
+                  padding: "8px 10px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  overflow: "hidden",
+                }}
+              >
+                <div style={{ fontSize: 16, fontWeight: 900, color: "rgba(232,239,233,0.7)", marginBottom: 2 }}>
+                  حلقة الإصلاح داخل الخوارزمية
                 </div>
-              ))}
-            </div>
-          </Show>
-
-          <Show step={step} at={4} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.4 }}>
-              النتيجة: حلول مقبولة تحقق التوازن بين التكلفة والتغطية والعدالة
-            </div>
-            <div
-              style={{
-                flex: 1,
-                minHeight: 0,
-                display: "grid",
-                gridTemplateColumns: "1fr auto 1fr auto 1fr",
-                alignItems: "center",
-                gap: 6,
-                background: "#fff",
-                borderRadius: 14,
-                border: `1.5px solid ${C.hair}`,
-                padding: "14px 10px",
-              }}
-            >
-              {[
-                { t: "BPSO / AGA", c: C.teal },
-                { t: "قيد العدالة", c: C.green },
-                { t: "حل مقبول عادل", c: C.green, solid: true },
-              ].map((b, i) => (
-                <React.Fragment key={b.t}>
+                {PSEUDO.map((p) => (
                   <div
+                    key={p.n}
                     style={{
-                      textAlign: "center",
-                      padding: "14px 8px",
-                      borderRadius: 12,
-                      fontSize: 17,
-                      fontWeight: 900,
-                      color: b.solid ? "#fff" : C.ink,
-                      background: b.solid ? b.c : "#fff",
-                      border: `2px solid ${b.c}`,
+                      display: "flex",
+                      gap: 8,
+                      fontSize: 16.5,
+                      fontWeight: 700,
+                      padding: "4px 8px",
+                      borderRadius: 6,
+                      background: p.hot ? "rgba(46,125,91,0.45)" : "transparent",
+                      lineHeight: 1.35,
                     }}
                   >
-                    {b.t}
+                    <span style={{ fontFamily: "Inter, sans-serif", opacity: 0.55, width: 18, flexShrink: 0 }}>{p.n}</span>
+                    <span style={{ minWidth: 0 }}>{p.t}</span>
                   </div>
-                  {i < 2 && (
-                    <div style={{ fontSize: 22, fontWeight: 900, color: C.green, textAlign: "center" }}>←</div>
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-            <div
-              style={{
-                fontSize: 17.5,
+                ))}
+              </div>
+            </Show>
+
+            <Show step={step} at={5} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.45 }}>
+                النتيجة: حلول مقبولة تحقق التوازن بين التكلفة والتغطية والعدالة
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto 1fr auto 1fr",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#fff",
+                  borderRadius: 14,
+                  border: `1.5px solid ${C.hair}`,
+                  padding: "14px 10px",
+                }}
+              >
+                {[
+                  { t: "BPSO / AGA", c: C.teal },
+                  { t: "قيد العدالة", c: C.green },
+                  { t: "حل مقبول عادل", c: C.green, solid: true },
+                ].map((b, i) => (
+                  <React.Fragment key={b.t}>
+                    <div
+                      style={{
+                        textAlign: "center",
+                        padding: "14px 8px",
+                        borderRadius: 12,
+                        fontSize: 18.5,
+                        fontWeight: 900,
+                        color: b.solid ? "#fff" : C.ink,
+                        background: b.solid ? b.c : "#fff",
+                        border: `2px solid ${b.c}`,
+                      }}
+                    >
+                      {b.t}
+                    </div>
+                    {i < 2 && (
+                      <div style={{ fontSize: 22, fontWeight: 900, color: C.green, textAlign: "center" }}>←</div>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div
+                style={{
+                fontSize: 18.5,
                 fontWeight: 800,
                 color: C.green,
                 background: "rgba(46,125,91,0.1)",
-                borderRadius: 12,
-                padding: "10px 12px",
-                textAlign: "center",
-              }}
-            >
-              Feasible · Budget ✓ · Coverage ✓ · Fairness ✓
-            </div>
-          </Show>
+                  borderRadius: 12,
+                  padding: "10px 12px",
+                  textAlign: "center",
+                }}
+              >
+                Feasible · Budget ✓ · Coverage ✓ · Fairness ✓
+              </div>
+            </Show>
+          </div>
         </div>
-      </div>
+      </Show>
     </ContribStage>
   );
 };

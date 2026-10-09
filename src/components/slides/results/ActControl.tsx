@@ -360,9 +360,7 @@ export const ResSpillover: React.FC = () => {
           <Show step={step} at={4} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <Card color={B} top style={{ padding: "10px 14px" }}>
               <div style={{ fontSize: 20.5, fontWeight: 900, lineHeight: 1.6 }}>ارتفاع نسبة التسرب في المناطق الريفية هو نتيجة حتمية لكبر مساحات الخلايا الراديوية (Cell Footprints) وتباعد المحطات، وليس قصوراً في خوارزمية التحكم.</div>
-              <Formula size={15} style={{ marginTop: 6 }}>
-                Spillover Ratio ∝ 1 / Infrastructure Density
-              </Formula>
+              
             </Card>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
               <span style={{ fontSize: 18.6, fontWeight: 900 }}>آليات التخفيف الهندسية المعتمدة:</span>

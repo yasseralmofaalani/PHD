@@ -288,12 +288,16 @@ export type AlgoSceneKind = "aga" | "bpso" | "milp";
 interface AlgoSceneCardProps {
   kind: AlgoSceneKind;
   active: boolean;
+  /** Current speaking focus — enlarges border and dims siblings via parent. */
+  focused?: boolean;
   titleAr: string;
   titleEn: string;
   /** One short metaphorical line — replaces the long origin paragraph. */
   tagline: string;
   strength: string;
   limit: string;
+  /** Short oral cue shown when focused (speaker support). */
+  speakCue?: string;
   onDetail?: () => void;
   detailLabel?: string;
 }
@@ -332,11 +336,13 @@ const Viz: React.FC<{ kind: AlgoSceneKind; active: boolean; color: string }> = (
 export const AlgoSceneCard: React.FC<AlgoSceneCardProps> = ({
   kind,
   active,
+  focused = false,
   titleAr,
   titleEn,
   tagline,
   strength,
   limit,
+  speakCue,
   onDetail,
   detailLabel,
 }) => {
@@ -349,7 +355,7 @@ export const AlgoSceneCard: React.FC<AlgoSceneCardProps> = ({
       animate={{
         opacity: active ? 1 : 0.14,
         y: active ? 0 : 14,
-        scale: active ? 1 : 0.97,
+        scale: focused ? 1.02 : active ? 1 : 0.97,
       }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       style={{
@@ -360,11 +366,16 @@ export const AlgoSceneCard: React.FC<AlgoSceneCardProps> = ({
         borderRadius: radius.xl,
         overflow: "hidden",
         background: "#fff",
-        border: `1.5px solid ${active ? alpha(meta.color, 0.4) : alpha(palette.ink, 0.06)}`,
-        boxShadow: active
-          ? `0 12px 32px ${alpha(meta.color, 0.14)}`
-          : "none",
+        border: `${focused ? 2.5 : 1.5}px solid ${
+          active ? alpha(meta.color, focused ? 0.7 : 0.4) : alpha(palette.ink, 0.06)
+        }`,
+        boxShadow: focused
+          ? `0 16px 40px ${alpha(meta.color, 0.28)}`
+          : active
+            ? `0 12px 32px ${alpha(meta.color, 0.14)}`
+            : "none",
         position: "relative",
+        zIndex: focused ? 2 : 1,
       }}
     >
       {/* Visual vignette — the hero of each card */}
@@ -525,6 +536,25 @@ export const AlgoSceneCard: React.FC<AlgoSceneCardProps> = ({
             <span style={{ flexShrink: 0, opacity: 0.85 }}>{rejected ? "✗" : "⚠"}</span>
             <span>{limit}</span>
           </div>
+          {speakCue && focused && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                marginTop: 2,
+                fontSize: 14,
+                fontWeight: 800,
+                lineHeight: 1.4,
+                color: meta.color,
+                background: alpha(meta.color, 0.08),
+                borderRadius: radius.md,
+                padding: "7px 10px",
+                border: `1px dashed ${alpha(meta.color, 0.35)}`,
+              }}
+            >
+              {speakCue}
+            </motion.div>
+          )}
         </div>
       </div>
     </motion.div>

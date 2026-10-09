@@ -52,10 +52,11 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       {/* Section Progress Bar (Research Timeline) */}
       <div
         style={{
-          flex: 1,
+          flex: '1 1 auto',
           display: 'flex',
           gap: '8px',
           alignItems: 'center',
+          minWidth: 0,
           maxWidth: '1400px',
         }}
       >
@@ -77,12 +78,13 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
               role="button"
               tabIndex={0}
               style={{
-                flex: isSectionActive ? 1.35 : 1,
+                flex: isSectionActive ? '1.35 1 auto' : '1 1 auto',
+                minWidth: 0,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '4px',
                 cursor: 'pointer',
-                padding: '6px 12px',
+                padding: '6px 10px',
                 borderRadius: '10px',
                 position: 'relative',
                 background: isSectionActive
@@ -94,8 +96,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                 boxShadow: isSectionActive
                   ? '0 4px 16px rgba(107, 31, 42, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 0 10px rgba(255, 215, 0, 0.25)'
                   : 'none',
-                transform: isSectionActive ? 'scale(1.02)' : 'scale(1)',
-                transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
               }}
               onClick={() => {
                 if (section.slides.length > 0) onGoTo(section.slides[0]);

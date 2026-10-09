@@ -66,7 +66,7 @@ export const SlideS5_Conclusions: React.FC = () => {
   return (
     <div style={{ ...slideContainerStyle, cursor: step < totalSteps ? "pointer" : "default" }} dir="rtl" onClick={() => step < totalSteps && goNext()}>
       <div style={techGridStyle} />
-      <SlideHeader titleAr="الاستنتاجات: ماذا قدّمت الأطروحة؟" badge={<SectionBadge text="Conclusions — Ch.7 §1.7" variant="primary" />} />
+      <SlideHeader titleAr="الاستنتاجات: ماذا قدّمت الأطروحة؟" badge={<SectionBadge text="" variant="primary" />} />
       <Body>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18 }}>
           {CONCLUSIONS.map((c, i) => {
@@ -108,18 +108,18 @@ export const SlideS5_Recommendations: React.FC = () => {
       <div style={techGridStyle} />
       <SlideHeader titleAr="التوصيات العملية للمشغّل وصانع القرار" badge={<SectionBadge text="" variant="accent" />} />
       <Body>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18 }}>
           {IMPACT.map((m, i) => {
             const t = CONTRIB[m.contribution];
             return (
-              <Reveal key={m.title} on={step >= i + 1} style={{ ...card, borderRight: `7px solid ${t.color}`, padding: "18px 22px", display: "flex", flexDirection: "column", gap: 8, minHeight: 170 }}>
+              <Reveal key={m.title} on={step >= i + 1} style={{ ...card, borderRight: `7px solid ${t.color}`, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 6, minHeight: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 37.8, fontWeight: 900, color: alpha(t.color, 0.35) }}>{`0${i + 1}`}</span>
-                  <span style={{ fontSize: 19, fontWeight: 900, color: "#fff", background: t.color, borderRadius: 6, padding: "1px 9px" }}>{t.ordinal}</span>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 30, fontWeight: 900, color: alpha(t.color, 0.35) }}>{`0${i + 1}`}</span>
+                  <span style={{ fontSize: 17, fontWeight: 900, color: "#fff", background: t.color, borderRadius: 6, padding: "1px 9px" }}>{t.ordinal}</span>
                 </div>
-                <div style={{ fontSize: "clamp(23px, 1.95vw, 27.6px)", fontWeight: 900 }}>{m.title}</div>
-                <div style={{ fontSize: 19.8, fontWeight: 700, color: C.inkSoft, lineHeight: 1.7 }}>{m.body}</div>
-                <span style={{ marginTop: "auto", alignSelf: "flex-start", fontSize: 19.3, fontWeight: 900, color: t.color, background: t.soft, borderRadius: 999, padding: "4px 14px" }}>{m.evidence}</span>
+                <div style={{ fontSize: 21, fontWeight: 900, lineHeight: 1.3 }}>{m.title}</div>
+                <div style={{ fontSize: 16.5, fontWeight: 700, color: C.inkSoft, lineHeight: 1.45 }}>{m.body}</div>
+                <span style={{ marginTop: "auto", alignSelf: "flex-start", fontSize: 15.5, fontWeight: 900, color: t.color, background: t.soft, borderRadius: 12, padding: "4px 10px", lineHeight: 1.35 }}>{m.evidence}</span>
               </Reveal>
             );
           })}
