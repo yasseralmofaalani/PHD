@@ -313,6 +313,12 @@ const INPUTS: Array<{ icon: LucideIcon; title: string; sub: string; color: strin
   { icon: Radio, title: "توقع التغطية", sub: "البصمة الجغرافية لكل خلية", color: C.cyan },
 ];
 
+const sectorAim = (pts: Array<[number, number]>) => (Math.atan2(pts[2][1] - pts[0][1], pts[2][0] - pts[0][0]) * 180) / Math.PI;
+const angApart = (a: number, b: number) => {
+  const d = Math.abs(a - b) % 360;
+  return d > 180 ? 360 - d : d;
+};
+
 const GisCanvas: React.FC<{ sites: SectorSite[] }> = ({ sites }) => (
   <svg viewBox={`${ZONE.x - 92} ${ZONE.y - 78} 184 156`} style={{ width: "100%", height: "100%", display: "block" }}>
     <SyriaBase idSuffix="mech" color="#8fd9cf" fillOpacity={0.14} />
@@ -328,23 +334,44 @@ const GisCanvas: React.FC<{ sites: SectorSite[] }> = ({ sites }) => (
       animate={{ opacity: [0.72, 1, 0.72] }}
       transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
     />
-    {sites.map((site, i) => {
-      const gold = site.kind !== "far";
-      return (
-        <g key={i} opacity={gold ? 1 : 0.22}>
-          {site.sectors.map((sec, k) => (
-            <polygon
-              key={k}
-              points={polyStr(sec.pts)}
-              fill={gold ? "rgba(200,149,26,0.62)" : "rgba(8,16,18,0.18)"}
-              stroke={gold ? C.gold : SECTOR_EDGE[k]}
-              strokeWidth={gold ? 1.15 : 0.7}
-              strokeLinejoin="round"
-            />
-          ))}
-          <circle cx={site.x} cy={site.y} r={gold ? 2.3 : 1.35} fill={gold ? C.gold : "#9aa7a4"} />
+    {(() => {
+      const painted = sites.flatMap((site, i) => {
+        const siteInside = dist(site.x, site.y, ZONE.x, ZONE.y) <= ZONE.r;
+        const toward = (Math.atan2(ZONE.y - site.y, ZONE.x - site.x) * 180) / Math.PI;
+        return site.sectors.map((sec, k) => ({
+          key: `${i}-${k}`,
+          sec,
+          k,
+          gold: siteInside || angApart(sectorAim(sec.pts), toward) <= 52,
+        }));
+      });
+      const ordered = [...painted.filter((p) => p.gold), ...painted.filter((p) => !p.gold)];
+      return ordered.map(({ key, sec, k, gold }) => (
+        <g key={key}>
+          <polygon
+            points={polyStr(sec.pts)}
+            fill={gold ? "rgba(200,149,26,0.78)" : SECTOR_EDGE[k]}
+            fillOpacity={gold ? 0.82 : 0.92}
+            stroke={gold ? C.gold : SECTOR_EDGE[k]}
+            strokeWidth={gold ? 1.15 : 1}
+            strokeLinejoin="round"
+          />
+          <line
+            x1={sec.pts[0][0]}
+            y1={sec.pts[0][1]}
+            x2={sec.pts[2][0]}
+            y2={sec.pts[2][1]}
+            stroke={gold ? "#fff4d2" : "#0c1618"}
+            strokeWidth={0.65}
+            strokeLinecap="round"
+            opacity={0.85}
+          />
         </g>
-      );
+      ));
+    })()}
+    {sites.map((site, i) => {
+      const siteInside = dist(site.x, site.y, ZONE.x, ZONE.y) <= ZONE.r;
+      return <circle key={`dot-${i}`} cx={site.x} cy={site.y} r={siteInside ? 2.2 : 1.45} fill={siteInside ? C.gold : "#e8e4d8"} stroke="#0c1618" strokeWidth={0.35} />;
     })}
     <T x={ZONE.x} y={ZONE.y - ZONE.r - 8} size={9} weight={900} fill={C.gold}>
       نطاق الحجب
@@ -536,7 +563,7 @@ const MechanismVisual: React.FC<{ step: number; sites: SectorSite[] }> = ({ step
         <div style={{ minHeight: 0, borderRadius: 16, overflow: "hidden", background: "rgba(0,0,0,0.22)", border: "1px solid rgba(143,217,207,0.28)", position: "relative" }}>
           <GisCanvas sites={sites} />
           <div style={{ position: "absolute", left: 10, bottom: 10, fontSize: 14, fontWeight: 800, color: CREAM, background: "rgba(12,22,24,0.78)", borderRadius: 999, padding: "4px 10px" }}>
-            الذهبي: خلايا تصل تغطيتها
+            الذهبي: داخل الدائرة أو اتجاهه نحوها
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 34px 1fr 34px 1fr", gap: 8, alignItems: "center" }}>
